@@ -1,0 +1,47 @@
+import { CATEGORIES, type Category } from "../types";
+
+interface CategoryPickerProps {
+  value: Category | "alle";
+  onChange: (value: Category | "alle") => void;
+}
+
+export default function CategoryPicker({ value, onChange }: CategoryPickerProps) {
+  return (
+    <div className="flex gap-2 overflow-x-auto px-4 pb-3 pt-1">
+      <Chip label="Alle" emoji="✨" active={value === "alle"} onClick={() => onChange("alle")} />
+      {CATEGORIES.map((c) => (
+        <Chip
+          key={c.id}
+          label={c.label}
+          emoji={c.emoji}
+          active={value === c.id}
+          onClick={() => onChange(c.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Chip({
+  label,
+  emoji,
+  active,
+  onClick,
+}: {
+  label: string;
+  emoji: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+        active ? "bg-rose-600 text-white" : "bg-white text-gray-500 border border-rose-100"
+      }`}
+    >
+      <span>{emoji}</span>
+      {label}
+    </button>
+  );
+}
