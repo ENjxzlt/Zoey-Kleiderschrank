@@ -1,0 +1,48 @@
+export type Category =
+  | "oberteil"
+  | "hose"
+  | "kleid"
+  | "rock"
+  | "jacke"
+  | "schuhe"
+  | "accessoire";
+
+export interface CategoryMeta {
+  id: Category;
+  label: string;
+  emoji: string;
+}
+
+export const CATEGORIES: CategoryMeta[] = [
+  { id: "oberteil", label: "Oberteile", emoji: "👕" },
+  { id: "hose", label: "Hosen", emoji: "👖" },
+  { id: "rock", label: "Röcke", emoji: "👗" },
+  { id: "kleid", label: "Kleider", emoji: "👘" },
+  { id: "jacke", label: "Jacken", emoji: "🧥" },
+  { id: "schuhe", label: "Schuhe", emoji: "👟" },
+  { id: "accessoire", label: "Accessoires", emoji: "👜" },
+];
+
+export function categoryLabel(id: Category): string {
+  return CATEGORIES.find((c) => c.id === id)?.label ?? id;
+}
+
+export function categoryEmoji(id: Category): string {
+  return CATEGORIES.find((c) => c.id === id)?.emoji ?? "🏷️";
+}
+
+export interface ClothingItem {
+  id: string;
+  name: string;
+  category: Category;
+  color?: string;
+  image: Blob;
+  createdAt: number;
+}
+
+export interface Outfit {
+  id: string;
+  name: string;
+  itemIds: string[];
+  createdAt: number;
+}

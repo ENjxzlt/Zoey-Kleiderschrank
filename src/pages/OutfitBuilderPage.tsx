@@ -1,0 +1,145 @@
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useWardrobe } from "../context/WardrobeContext";
+import PageHeader from "../components/PageHeader";
+import CategoryPicker from "../components/CategoryPicker";
+import ItemCard from "../components/ItemCard";
+import ImageThumb from "../components/ImageThumb";
+import type { Category } from "../types";
+
+export default function OutfitBuilderPage() {
+  const { id } = useParams();
+  const isEditing = Boolean(id) && id !== "neu";
+  const navigate = useNavigate();
+  const { items, outfits, itemsById, saveOutfit, removeOutfit } = useWardrobe();
+
+  const existing = useMemo(
+    () => (isEditing ? outfits.find((o) => o.id === id) : undefined),
+    [isEditing, outfits, id],
+  );
+
+  const [name, setName] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [filter, setFilter] = useState<Category | "alle">("alle");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (existing && !initialized) {
+      setName(existing.name);
+      setSelectedIds(existing.itemIds);
+      setInitialized(true);
+    }
+  }, [existing, initialized]);
+
+  const filteredItems = useMemo(
+    () => (filter === "alle" ? items : items.filter((i) => i.category === filter)),
+    [items, filter],
+  );
+
+  const selectedItems = useMemo(
+    () => selectedIds.map((sid) => itemsById.get(sid)).filter(Boolean) as typeof items,
+    [selectedIds, itemsById],
+  );
+
+  function toggle(itemId: string) {
+    setSelectedIds((prev) =>
+      prev.includes(itemId) ? prev.filter((i) => i !== itemId) : [...prev, itemId],
+    );
+  }
+
+  async function handleSave() {
+    if (selectedIds.length === 0) return;
+    await saveOutfit({
+      id: existing?.id ?? crypto.randomUUID(),
+      name: name.trim() || "Ohne Namen",
+      itemIds: selectedIds,
+      createdAt: existing?.createdAt ?? Date.now(),
+    });
+    navigate("/outfits");
+  }
+
+  async function handleDelete() {
+    if (!existing) return;
+    await removeOutfit(existing.id);
+    navigate("/outfits");
+  }
+
+  return (
+    <div>
+      <PageHeader title={isEditing ? "Outfit bearbeiten" : "Neues Outfit"} />
+
+      <div className="px-4">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Name des Outfits"
+          className="mb-3 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400"
+        />
+
+        <div className="mb-3 rounded-2xl border border-dashed border-rose-200 bg-rose-50/50 p-3">
+          {selectedItems.length === 0 ? (
+            <p className="py-6 text-center text-xs text-gray-400">
+              Wähle unten Teile aus, um dein Outfit zusammenzustellen.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {selectedItems.map((item) => (
+                <div key={item.id} className="relative h-20 w-20 shrink-0 rounded-xl bg-white shadow-sm">
+                  <ImageThumb
+                    image={item.image}
+                    alt={item.name}
+                    className="h-full w-full object-contain p-1"
+                  />
+                  <button
+                    onClick={() => toggle(item.id)}
+                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-700 text-[10px] text-white"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <CategoryPicker value={filter} onChange={setFilter} />
+
+      {filteredItems.length === 0 ? (
+        <p className="px-4 py-10 text-center text-sm text-gray-400">
+          Keine Teile in dieser Kategorie.
+        </p>
+      ) : (
+        <div className="grid grid-cols-3 gap-3 px-4 pb-4">
+          {filteredItems.map((item) => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              selected={selectedIds.includes(item.id)}
+              onClick={() => toggle(item.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="sticky bottom-0 -mx-0 flex gap-2 border-t border-rose-100 bg-white px-4 py-3">
+        {isEditing && (
+          <button
+            onClick={() => (confirmDelete ? handleDelete() : setConfirmDelete(true))}
+            className="rounded-full bg-rose-100 px-4 py-3 text-sm font-medium text-rose-700"
+          >
+            {confirmDelete ? "Wirklich löschen?" : "Löschen"}
+          </button>
+        )}
+        <button
+          onClick={handleSave}
+          disabled={selectedIds.length === 0}
+          className="flex-1 rounded-full bg-rose-600 py-3 text-sm font-medium text-white disabled:opacity-40"
+        >
+          Outfit speichern
+        </button>
+      </div>
+    </div>
+  );
+}
