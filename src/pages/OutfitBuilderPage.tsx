@@ -4,8 +4,8 @@ import { useWardrobe } from "../context/WardrobeContext";
 import PageHeader from "../components/PageHeader";
 import CategoryPicker from "../components/CategoryPicker";
 import ItemCard from "../components/ItemCard";
-import ImageThumb from "../components/ImageThumb";
-import type { Category } from "../types";
+import OutfitFigure from "../components/OutfitFigure";
+import type { Category, ClothingItem } from "../types";
 
 export default function OutfitBuilderPage() {
   const { id } = useParams();
@@ -42,10 +42,13 @@ export default function OutfitBuilderPage() {
     [selectedIds, itemsById],
   );
 
-  function toggle(itemId: string) {
-    setSelectedIds((prev) =>
-      prev.includes(itemId) ? prev.filter((i) => i !== itemId) : [...prev, itemId],
-    );
+  function pick(item: ClothingItem) {
+    setSelectedIds((prev) => {
+      if (prev.includes(item.id)) return prev.filter((i) => i !== item.id);
+      if (item.category === "accessoire") return [...prev, item.id];
+      const withoutSameCategory = prev.filter((id) => itemsById.get(id)?.category !== item.category);
+      return [...withoutSameCategory, item.id];
+    });
   }
 
   async function handleSave() {
@@ -78,28 +81,12 @@ export default function OutfitBuilderPage() {
         />
 
         <div className="mb-3 rounded-2xl border border-dashed border-rose-200 bg-rose-50/50 p-3">
-          {selectedItems.length === 0 ? (
-            <p className="py-6 text-center text-xs text-gray-400">
-              Wähle unten Teile aus, um dein Outfit zusammenzustellen.
+          <OutfitFigure items={selectedItems} onRemove={(item) => pick(item)} />
+          {selectedItems.length === 0 && (
+            <p className="mt-2 text-center text-xs text-gray-400">
+              Wähle unten Teile aus – sie erscheinen an der Figur. Tippe ein Teil an der Figur an,
+              um es wieder zu entfernen.
             </p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {selectedItems.map((item) => (
-                <div key={item.id} className="relative h-20 w-20 shrink-0 rounded-xl bg-white shadow-sm">
-                  <ImageThumb
-                    image={item.image}
-                    alt={item.name}
-                    className="h-full w-full object-contain p-1"
-                  />
-                  <button
-                    onClick={() => toggle(item.id)}
-                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-700 text-[10px] text-white"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
           )}
         </div>
       </div>
@@ -117,7 +104,7 @@ export default function OutfitBuilderPage() {
               key={item.id}
               item={item}
               selected={selectedIds.includes(item.id)}
-              onClick={() => toggle(item.id)}
+              onClick={() => pick(item)}
             />
           ))}
         </div>
