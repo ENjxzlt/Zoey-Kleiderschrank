@@ -1,3 +1,5 @@
+import { cropToOpaqueBounds } from "./imageCrop";
+
 const REMOVE_BG_ENDPOINT = "https://api.remove.bg/v1.0/removebg";
 
 export class BackgroundRemovalError extends Error {}
@@ -54,5 +56,6 @@ export async function removeBackground(image: Blob, apiKey: string): Promise<Blo
   }
 
   const arrayBuffer = await response.arrayBuffer();
-  return new Blob([arrayBuffer], { type: "image/png" });
+  const rawBlob = new Blob([arrayBuffer], { type: "image/png" });
+  return cropToOpaqueBounds(rawBlob);
 }
