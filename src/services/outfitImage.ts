@@ -23,17 +23,9 @@ function firstOf(items: ClothingItem[], category: ClothingItem["category"]): Clo
   return items.find((i) => i.category === category);
 }
 
-/** Mirrors the <svg viewBox="0 0 120 200"> stick figure drawn behind the
- * garments in OutfitFigure.tsx, so the download looks like the on-screen figure. */
-function drawStickFigure(ctx: CanvasRenderingContext2D, width: number) {
-  const s = width / 120; // viewBox is 120x200, same aspect ratio as the figure box
-
-  ctx.save();
-  ctx.strokeStyle = "#fecdd3";
-  ctx.lineWidth = 2.5 * s;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-
+/** Traces the same paths as the <svg viewBox="0 0 120 200"> stick figure in
+ * OutfitFigure.tsx, stroking with whatever style is currently set on ctx. */
+function traceStickFigure(ctx: CanvasRenderingContext2D, s: number) {
   ctx.beginPath();
   ctx.arc(60 * s, 22 * s, 16 * s, 0, Math.PI * 2);
   ctx.stroke();
@@ -69,7 +61,41 @@ function drawStickFigure(ctx: CanvasRenderingContext2D, width: number) {
   ctx.moveTo(34 * s, 92 * s);
   ctx.quadraticCurveTo(60 * s, 108 * s, 86 * s, 92 * s);
   ctx.stroke();
+}
 
+/** Mirrors the stick figure drawn behind the garments in OutfitFigure.tsx, so
+ * the download looks like the on-screen figure - but bolder and with a light
+ * halo so it reads clearly against the vignette background at every point,
+ * not just the light rose-200 tint used on screen. */
+function drawStickFigure(ctx: CanvasRenderingContext2D, width: number) {
+  const s = width / 120; // viewBox is 120x200, same aspect ratio as the figure box
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  // Halo pass: a wide, soft, semi-opaque white stroke so the figure stays
+  // legible even over the darker edges of the vignette.
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+  ctx.lineWidth = 7 * s;
+  traceStickFigure(ctx, s);
+
+  // Main pass: a bolder, more saturated rose than before.
+  ctx.strokeStyle = "#e11d48";
+  ctx.lineWidth = 3.4 * s;
+  traceStickFigure(ctx, s);
+
+  ctx.restore();
+}
+
+/** Soft contact shadow so garments lift off the background regardless of
+ * their own color, matching the on-screen drop-shadow-md on each item. */
+function withGarmentShadow(ctx: CanvasRenderingContext2D, draw: () => void) {
+  ctx.save();
+  ctx.shadowColor = "rgba(20, 10, 20, 0.32)";
+  ctx.shadowBlur = 22;
+  ctx.shadowOffsetY = 9;
+  draw();
   ctx.restore();
 }
 
