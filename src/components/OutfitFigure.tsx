@@ -6,14 +6,23 @@ import type { Category, ClothingItem } from "../types";
 const MIN_SCALE = 0.6;
 const MAX_SCALE = 1.8;
 const MAX_OFFSET = 45;
+const ACCESSORY_MIN = 8;
+const ACCESSORY_MAX = 92;
 const DRAG_THRESHOLD_PX = 4;
 
 type Position = { x: number; y: number };
+type Bounds = { min: number; max: number };
 
 const ORIGIN: Position = { x: 0, y: 0 };
+const ZONE_BOUNDS: Bounds = { min: -MAX_OFFSET, max: MAX_OFFSET };
+const ACCESSORY_BOUNDS: Bounds = { min: ACCESSORY_MIN, max: ACCESSORY_MAX };
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function defaultAccessoryPosition(index: number): Position {
+  return { x: 80, y: 10 + index * 16 };
 }
 
 interface OutfitFigureProps {
@@ -46,25 +55,31 @@ export default function OutfitFigure({
   const jacke = firstOf(items, "jacke");
   const bottom = firstOf(items, "hose") ?? firstOf(items, "rock");
   const schuhe = firstOf(items, "schuhe");
+  const kopfbedeckung = firstOf(items, "kopfbedeckung");
   const accessoires = items.filter((i) => i.category === "accessoire");
 
   const showKleid = Boolean(kleid) && !oberteil && !bottom;
   const activeItem = items.find((i) => i.id === activeId);
 
-  function positionOf(item: ClothingItem | undefined): Position {
-    if (!item) return ORIGIN;
+  function positionOf(item: ClothingItem | undefined, fallback: Position): Position {
+    if (!item) return fallback;
     if (livePosition?.id === item.id) return livePosition.pos;
-    return positions[item.id] ?? ORIGIN;
+    return positions[item.id] ?? fallback;
   }
 
-  function startDrag(item: ClothingItem, e: ReactPointerEvent<HTMLButtonElement>) {
+  function beginDrag(
+    item: ClothingItem,
+    fallbackPos: Position,
+    bounds: Bounds,
+    e: ReactPointerEvent<HTMLButtonElement>,
+  ) {
     e.preventDefault();
     const drag = {
       id: item.id,
       startX: e.clientX,
       startY: e.clientY,
-      startPos: positions[item.id] ?? ORIGIN,
-      pos: positions[item.id] ?? ORIGIN,
+      startPos: positions[item.id] ?? fallbackPos,
+      pos: positions[item.id] ?? fallbackPos,
       moved: false,
     };
 
@@ -80,8 +95,8 @@ export default function OutfitFigure({
       if (!drag.moved) return;
 
       drag.pos = {
-        x: clamp(drag.startPos.x + (dxPx / rect.width) * 100, -MAX_OFFSET, MAX_OFFSET),
-        y: clamp(drag.startPos.y + (dyPx / rect.height) * 100, -MAX_OFFSET, MAX_OFFSET),
+        x: clamp(drag.startPos.x + (dxPx / rect.width) * 100, bounds.min, bounds.max),
+        y: clamp(drag.startPos.y + (dyPx / rect.height) * 100, bounds.min, bounds.max),
       };
       setLivePosition({ id: drag.id, pos: drag.pos });
     }
@@ -102,6 +117,27 @@ export default function OutfitFigure({
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onEnd);
     window.addEventListener("pointercancel", onEnd);
+  }
+
+  function startDragZone(item: ClothingItem, e: ReactPointerEvent<HTMLButtonElement>) {
+    beginDrag(item, ORIGIN, ZONE_BOUNDS, e);
+  }
+
+  function startDragAccessory(
+    item: ClothingItem,
+    index: number,
+    e: ReactPointerEvent<HTMLButtonElement>,
+  ) {
+    beginDrag(item, defaultAccessoryPosition(index), ACCESSORY_BOUNDS, e);
+  }
+
+  function resetActiveItemPosition() {
+    if (!activeItem) return;
+    const accessoryIndex = accessoires.findIndex((a) => a.id === activeItem.id);
+    onPositionChange(
+      activeItem.id,
+      accessoryIndex >= 0 ? defaultAccessoryPosition(accessoryIndex) : ORIGIN,
+    );
   }
 
   return (
@@ -126,41 +162,15 @@ export default function OutfitFigure({
           <path d="M34 92 Q60 108 86 92" />
         </svg>
 
-        <FigureZone
-          style={{ top: "1%", right: "2%", width: "26%", height: "16%" }}
-          item={accessoires[0]}
-          scale={accessoires[0] ? (scales[accessoires[0].id] ?? 1) : 1}
-          position={positionOf(accessoires[0])}
-          active={accessoires[0]?.id === activeId}
-          emoji="👜"
-          onPointerDownItem={startDrag}
-          onRemove={onRemove}
-          zIndex={40}
-        />
-
-        {accessoires.length > 1 && (
-          <div className="absolute right-[1%] top-[17%] flex gap-1">
-            {accessoires.slice(1, 4).map((a) => (
-              <button
-                key={a.id}
-                onClick={() => onRemove(a)}
-                className="h-6 w-6 overflow-hidden rounded-full border border-white bg-rose-50 shadow dark:border-neutral-800 dark:bg-neutral-800"
-              >
-                <ImageThumb image={a.image} alt={a.name} className="h-full w-full object-contain" />
-              </button>
-            ))}
-          </div>
-        )}
-
         {showKleid ? (
           <FigureZone
             style={{ top: "17%", left: "18%", width: "64%", height: "58%" }}
             item={kleid}
             scale={kleid ? (scales[kleid.id] ?? 1) : 1}
-            position={positionOf(kleid)}
+            position={positionOf(kleid, ORIGIN)}
             active={kleid?.id === activeId}
             emoji="👘"
-            onPointerDownItem={startDrag}
+            onPointerDownItem={startDragZone}
             onRemove={onRemove}
             zIndex={20}
           />
@@ -170,10 +180,10 @@ export default function OutfitFigure({
               style={{ top: "21%", left: "23%", width: "54%", height: "32%" }}
               item={oberteil ?? kleid}
               scale={oberteil ? (scales[oberteil.id] ?? 1) : 1}
-              position={positionOf(oberteil)}
+              position={positionOf(oberteil, ORIGIN)}
               active={oberteil?.id === activeId}
               emoji="👕"
-              onPointerDownItem={startDrag}
+              onPointerDownItem={startDragZone}
               onRemove={onRemove}
               zIndex={20}
             />
@@ -181,10 +191,10 @@ export default function OutfitFigure({
               style={{ top: "50%", left: "25%", width: "50%", height: "38%" }}
               item={bottom}
               scale={bottom ? (scales[bottom.id] ?? 1) : 1}
-              position={positionOf(bottom)}
+              position={positionOf(bottom, ORIGIN)}
               active={bottom?.id === activeId}
               emoji="👖"
-              onPointerDownItem={startDrag}
+              onPointerDownItem={startDragZone}
               onRemove={onRemove}
               zIndex={10}
             />
@@ -195,10 +205,10 @@ export default function OutfitFigure({
           style={{ top: "17%", left: "12%", width: "76%", height: "44%" }}
           item={jacke}
           scale={jacke ? (scales[jacke.id] ?? 1) : 1}
-          position={positionOf(jacke)}
+          position={positionOf(jacke, ORIGIN)}
           active={jacke?.id === activeId}
           emoji="🧥"
-          onPointerDownItem={startDrag}
+          onPointerDownItem={startDragZone}
           onRemove={onRemove}
           zIndex={30}
           optional
@@ -208,13 +218,39 @@ export default function OutfitFigure({
           style={{ top: "88%", left: "27%", width: "46%", height: "11%" }}
           item={schuhe}
           scale={schuhe ? (scales[schuhe.id] ?? 1) : 1}
-          position={positionOf(schuhe)}
+          position={positionOf(schuhe, ORIGIN)}
           active={schuhe?.id === activeId}
           emoji="👟"
-          onPointerDownItem={startDrag}
+          onPointerDownItem={startDragZone}
           onRemove={onRemove}
           zIndex={15}
         />
+
+        <FigureZone
+          style={{ top: "-3%", left: "30%", width: "40%", height: "22%" }}
+          item={kopfbedeckung}
+          scale={kopfbedeckung ? (scales[kopfbedeckung.id] ?? 1) : 1}
+          position={positionOf(kopfbedeckung, ORIGIN)}
+          active={kopfbedeckung?.id === activeId}
+          emoji="🧢"
+          onPointerDownItem={startDragZone}
+          onRemove={onRemove}
+          zIndex={45}
+          optional
+        />
+
+        {accessoires.map((a, index) => (
+          <AccessoryBadge
+            key={a.id}
+            item={a}
+            position={positionOf(a, defaultAccessoryPosition(index))}
+            scale={scales[a.id] ?? 1}
+            active={a.id === activeId}
+            onPointerDownItem={(item, e) => startDragAccessory(item, index, e)}
+            onRemove={onRemove}
+            zIndex={60 + index}
+          />
+        ))}
       </div>
 
       {activeItem && (
@@ -232,7 +268,7 @@ export default function OutfitFigure({
             className="w-24 accent-rose-600"
           />
           <button
-            onClick={() => onPositionChange(activeItem.id, ORIGIN)}
+            onClick={resetActiveItemPosition}
             className="shrink-0 text-xs font-medium text-gray-500 dark:text-gray-400"
           >
             Zentrieren
@@ -298,6 +334,59 @@ function FigureZone({
           alt={item.name}
           className="h-full w-full object-contain drop-shadow-md"
           style={{ transform: `translate(${position.x}%, ${position.y}%) scale(${scale})` }}
+        />
+      </button>
+      <button
+        onClick={() => onRemove(item)}
+        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-700 text-[10px] text-white shadow"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
+function AccessoryBadge({
+  item,
+  position,
+  scale,
+  active,
+  onPointerDownItem,
+  onRemove,
+  zIndex,
+}: {
+  item: ClothingItem;
+  position: Position;
+  scale: number;
+  active: boolean;
+  onPointerDownItem: (item: ClothingItem, e: ReactPointerEvent<HTMLButtonElement>) => void;
+  onRemove: (item: ClothingItem) => void;
+  zIndex: number;
+}) {
+  return (
+    <div
+      className="absolute"
+      style={{
+        left: `${position.x}%`,
+        top: `${position.y}%`,
+        width: "24%",
+        height: "14%",
+        transform: "translate(-50%, -50%)",
+        zIndex,
+      }}
+    >
+      <button
+        onPointerDown={(e) => onPointerDownItem(item, e)}
+        className={`flex h-full w-full touch-none items-center justify-center rounded-xl transition ${
+          active ? "outline outline-2 outline-offset-2 outline-rose-400" : ""
+        }`}
+        title={item.name}
+      >
+        <ImageThumb
+          image={item.image}
+          alt={item.name}
+          className="h-full w-full object-contain drop-shadow-md"
+          style={{ transform: `scale(${scale})` }}
         />
       </button>
       <button
