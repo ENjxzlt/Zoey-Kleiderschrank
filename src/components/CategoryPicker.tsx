@@ -3,17 +3,25 @@ import { CATEGORIES, type Category } from "../types";
 interface CategoryPickerProps {
   value: Category | "alle";
   onChange: (value: Category | "alle") => void;
+  counts?: Partial<Record<Category | "alle", number>>;
 }
 
-export default function CategoryPicker({ value, onChange }: CategoryPickerProps) {
+export default function CategoryPicker({ value, onChange, counts }: CategoryPickerProps) {
   return (
     <div className="flex gap-2 overflow-x-auto px-4 pb-3 pt-1">
-      <Chip label="Alle" emoji="✨" active={value === "alle"} onClick={() => onChange("alle")} />
+      <Chip
+        label="Alle"
+        emoji="✨"
+        count={counts?.alle}
+        active={value === "alle"}
+        onClick={() => onChange("alle")}
+      />
       {CATEGORIES.map((c) => (
         <Chip
           key={c.id}
           label={c.label}
           emoji={c.emoji}
+          count={counts?.[c.id]}
           active={value === c.id}
           onClick={() => onChange(c.id)}
         />
@@ -25,11 +33,13 @@ export default function CategoryPicker({ value, onChange }: CategoryPickerProps)
 function Chip({
   label,
   emoji,
+  count,
   active,
   onClick,
 }: {
   label: string;
   emoji: string;
+  count?: number;
   active: boolean;
   onClick: () => void;
 }) {
@@ -44,6 +54,9 @@ function Chip({
     >
       <span>{emoji}</span>
       {label}
+      {typeof count === "number" && (
+        <span className={active ? "text-rose-100" : "text-gray-400 dark:text-gray-500"}>{count}</span>
+      )}
     </button>
   );
 }
