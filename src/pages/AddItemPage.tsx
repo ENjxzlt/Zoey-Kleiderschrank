@@ -7,6 +7,13 @@ import { processPhoto } from "../services/imageProcessing";
 import { LocalRemovalError } from "../services/localBackgroundRemoval";
 import { BackgroundRemovalError } from "../services/backgroundRemoval";
 import { getApiKey } from "../services/apiKey";
+import { getGoogleSearchConfig, hasGoogleSearchConfig } from "../services/googleSearchConfig";
+import {
+  searchProductImages,
+  fetchImageAsBlob,
+  ProductSearchError,
+  type ProductImageResult,
+} from "../services/productImageSearch";
 import { CATEGORIES, type Category } from "../types";
 
 type Step = "capture" | "processing" | "form";
@@ -25,6 +32,12 @@ export default function AddItemPage() {
   const [usedFallback, setUsedFallback] = useState(false);
   const [progress, setProgress] = useState(0);
 
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<ProductImageResult[] | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   const [name, setName] = useState("");
   const [category, setCategory] = useState<Category>(CATEGORIES[0].id);
   const [color, setColor] = useState("");
@@ -32,9 +45,8 @@ export default function AddItemPage() {
 
   const previewUrl = useObjectUrl(finalImage ?? originalPhoto);
 
-  async function handleFile(file: File | undefined) {
-    if (!file) return;
-    setOriginalPhoto(file);
+  async function processBlob(blob: Blob) {
+    setOriginalPhoto(blob);
     setError(null);
     setSkippedRemoval(false);
     setUsedFallback(false);
@@ -42,7 +54,7 @@ export default function AddItemPage() {
     setStep("processing");
 
     try {
-      const result = await processPhoto(file, getApiKey(), setProgress);
+      const result = await processPhoto(blob, getApiKey(), setProgress);
       setFinalImage(result.image);
       setUsedFallback(result.method === "remote");
       setStep("form");
@@ -54,6 +66,38 @@ export default function AddItemPage() {
       setError(message);
       setFinalImage(null);
       setStep("capture");
+    }
+  }
+
+  async function handleFile(file: File | undefined) {
+    if (!file) return;
+    await processBlob(file);
+  }
+
+  async function handleSearch() {
+    if (!searchQuery.trim()) return;
+    setSearchLoading(true);
+    setSearchError(null);
+    setSearchResults(null);
+    try {
+      const { apiKey, cx } = getGoogleSearchConfig();
+      const results = await searchProductImages(searchQuery.trim(), apiKey, cx);
+      setSearchResults(results);
+    } catch (e) {
+      setSearchError(e instanceof ProductSearchError ? e.message : "Suche fehlgeschlagen.");
+    } finally {
+      setSearchLoading(false);
+    }
+  }
+
+  async function handleSelectSearchResult(result: ProductImageResult) {
+    setSearchError(null);
+    try {
+      const blob = await fetchImageAsBlob(result.url);
+      setName(searchQuery.trim());
+      await processBlob(blob);
+    } catch (e) {
+      setSearchError(e instanceof ProductSearchError ? e.message : "Bild konnte nicht geladen werden.");
     }
   }
 
@@ -86,6 +130,10 @@ export default function AddItemPage() {
     setError(null);
     setSkippedRemoval(false);
     setUsedFallback(false);
+    setShowSearch(false);
+    setSearchQuery("");
+    setSearchResults(null);
+    setSearchError(null);
     setName("");
     setColor("");
   }
@@ -125,19 +173,99 @@ export default function AddItemPage() {
               )}
             </div>
           )}
-          <span className="text-6xl">📸</span>
-          <button
-            onClick={() => cameraInputRef.current?.click()}
-            className="w-full rounded-full bg-rose-600 py-3.5 text-sm font-medium text-white shadow shadow-rose-200"
-          >
-            Kamera öffnen
-          </button>
-          <button
-            onClick={() => galleryInputRef.current?.click()}
-            className="w-full rounded-full border border-rose-200 py-3.5 text-sm font-medium text-rose-600 dark:border-rose-900 dark:text-rose-400"
-          >
-            Aus Galerie wählen
-          </button>
+
+          {!showSearch ? (
+            <>
+              <span className="text-6xl">📸</span>
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                className="w-full rounded-full bg-rose-600 py-3.5 text-sm font-medium text-white shadow shadow-rose-200"
+              >
+                Kamera öffnen
+              </button>
+              <button
+                onClick={() => galleryInputRef.current?.click()}
+                className="w-full rounded-full border border-rose-200 py-3.5 text-sm font-medium text-rose-600 dark:border-rose-900 dark:text-rose-400"
+              >
+                Aus Galerie wählen
+              </button>
+              <button
+                onClick={() => setShowSearch(true)}
+                className="w-full rounded-full border border-rose-200 py-3.5 text-sm font-medium text-rose-600 dark:border-rose-900 dark:text-rose-400"
+              >
+                🔍 Bild aus dem Internet suchen
+              </button>
+            </>
+          ) : (
+            <div className="w-full">
+              {!hasGoogleSearchConfig() && (
+                <div className="mb-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                  Kein Google-API-Key hinterlegt.{" "}
+                  <button
+                    onClick={() => navigate("/einstellungen")}
+                    className="font-medium underline"
+                  >
+                    Jetzt einrichten
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                  placeholder="z. B. Nike Air Force 1 weiß"
+                  className="flex-1 rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-100"
+                />
+                <button
+                  onClick={handleSearch}
+                  disabled={searchLoading || !searchQuery.trim()}
+                  className="rounded-xl bg-rose-600 px-4 text-sm font-medium text-white disabled:opacity-40"
+                >
+                  Suchen
+                </button>
+              </div>
+
+              {searchError && (
+                <p className="mt-2 text-xs text-red-600 dark:text-red-400">{searchError}</p>
+              )}
+              {searchLoading && (
+                <p className="mt-3 text-center text-xs text-gray-400 dark:text-gray-500">
+                  Suche läuft…
+                </p>
+              )}
+
+              {searchResults && (
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {searchResults.map((r) => (
+                    <button
+                      key={r.url}
+                      onClick={() => handleSelectSearchResult(r)}
+                      className="aspect-square overflow-hidden rounded-xl border border-rose-100 bg-white dark:border-neutral-700 dark:bg-neutral-900"
+                    >
+                      <img
+                        src={r.thumbnail}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  setShowSearch(false);
+                  setSearchResults(null);
+                  setSearchError(null);
+                }}
+                className="mt-4 block w-full text-center text-xs font-medium text-gray-500 underline dark:text-gray-400"
+              >
+                Zurück
+              </button>
+            </div>
+          )}
         </div>
       )}
 

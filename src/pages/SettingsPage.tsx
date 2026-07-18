@@ -3,6 +3,7 @@ import { useWardrobe } from "../context/WardrobeContext";
 import { clearAll } from "../db";
 import PageHeader from "../components/PageHeader";
 import { getApiKey, setApiKey } from "../services/apiKey";
+import { getGoogleSearchConfig, setGoogleSearchConfig } from "../services/googleSearchConfig";
 import { exportBackup, importBackup } from "../services/backup";
 import { useTheme } from "../hooks/useTheme";
 import type { ThemeChoice } from "../services/theme";
@@ -11,6 +12,9 @@ export default function SettingsPage() {
   const { reload } = useWardrobe();
   const [key, setKey] = useState(getApiKey());
   const [savedNotice, setSavedNotice] = useState(false);
+  const [googleKey, setGoogleKey] = useState(getGoogleSearchConfig().apiKey);
+  const [googleCx, setGoogleCx] = useState(getGoogleSearchConfig().cx);
+  const [googleSavedNotice, setGoogleSavedNotice] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
@@ -21,6 +25,12 @@ export default function SettingsPage() {
     setApiKey(key.trim());
     setSavedNotice(true);
     setTimeout(() => setSavedNotice(false), 2000);
+  }
+
+  function handleSaveGoogleConfig() {
+    setGoogleSearchConfig(googleKey.trim(), googleCx.trim());
+    setGoogleSavedNotice(true);
+    setTimeout(() => setGoogleSavedNotice(false), 2000);
   }
 
   async function handleExport() {
@@ -115,6 +125,37 @@ export default function SettingsPage() {
           className="w-full rounded-full bg-rose-600 py-2.5 text-sm font-medium text-white"
         >
           {savedNotice ? "Gespeichert ✓" : "Speichern"}
+        </button>
+      </section>
+
+      <section className="mb-6 rounded-2xl border border-rose-100 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
+        <h2 className="mb-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
+          Produktbild-Suche (Google)
+        </h2>
+        <p className="mb-3 text-xs text-gray-400 dark:text-gray-500">
+          Zum Hinzufügen eines Teils per Produktname (statt Foto) wird ein kostenloser Google
+          Custom-Search-API-Key sowie eine Search-Engine-ID benötigt. Beides einmalig unter{" "}
+          <span className="font-medium">console.cloud.google.com</span> bzw.{" "}
+          <span className="font-medium">programmablesearchengine.google.com</span> erstellen.
+          Kostenloses Kontingent: 100 Suchen/Tag.
+        </p>
+        <input
+          value={googleKey}
+          onChange={(e) => setGoogleKey(e.target.value)}
+          placeholder="API-Key"
+          className="mb-2 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-100"
+        />
+        <input
+          value={googleCx}
+          onChange={(e) => setGoogleCx(e.target.value)}
+          placeholder="Search Engine ID (cx)"
+          className="mb-2 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-100"
+        />
+        <button
+          onClick={handleSaveGoogleConfig}
+          className="w-full rounded-full bg-rose-600 py-2.5 text-sm font-medium text-white"
+        >
+          {googleSavedNotice ? "Gespeichert ✓" : "Speichern"}
         </button>
       </section>
 
