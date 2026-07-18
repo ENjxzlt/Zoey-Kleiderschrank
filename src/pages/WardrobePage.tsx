@@ -25,11 +25,11 @@ export default function WardrobePage() {
       <CategoryPicker value={filter} onChange={setFilter} />
 
       {loading ? (
-        <p className="px-4 py-10 text-center text-sm text-gray-400">Lädt…</p>
+        <p className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">Lädt…</p>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-8 py-16 text-center">
           <span className="text-4xl">🧺</span>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             {items.length === 0
               ? "Noch keine Kleidungsstücke. Tippe unten auf „Foto“, um dein erstes Teil hinzuzufügen."
               : "Keine Teile in dieser Kategorie."}
@@ -80,15 +80,15 @@ function ItemDetailSheet({
   return (
     <div className="fixed inset-0 z-30 flex items-end bg-black/40" onClick={onClose}>
       <div
-        className="mx-auto w-full max-w-md rounded-t-3xl bg-white p-4 safe-bottom"
+        className="mx-auto w-full max-w-md rounded-t-3xl bg-white p-4 safe-bottom dark:bg-neutral-900"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-200" />
-        <div className="mb-3 flex aspect-square items-center justify-center rounded-2xl bg-rose-50">
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-gray-200 dark:bg-neutral-700" />
+        <div className="mb-3 flex aspect-square items-center justify-center rounded-2xl bg-rose-50 dark:bg-neutral-800">
           {url && <img src={url} alt={item.name} className="h-full w-full object-contain p-4" />}
         </div>
-        <h2 className="text-lg font-semibold text-gray-800">{item.name}</h2>
-        <p className="mb-4 text-sm text-gray-400">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{item.name}</h2>
+        <p className="mb-4 text-sm text-gray-400 dark:text-gray-500">
           {categoryEmoji(item.category)} {categoryLabel(item.category)}
           {item.color ? ` · ${item.color}` : ""}
         </p>
@@ -102,7 +102,7 @@ function ItemDetailSheet({
             </button>
             <button
               onClick={() => setConfirmDelete(false)}
-              className="flex-1 rounded-full border border-gray-200 py-2.5 text-sm font-medium text-gray-600"
+              className="flex-1 rounded-full border border-gray-200 py-2.5 text-sm font-medium text-gray-600 dark:border-neutral-700 dark:text-gray-300"
             >
               Abbrechen
             </button>
@@ -111,13 +111,13 @@ function ItemDetailSheet({
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="flex-1 rounded-full border border-gray-200 py-2.5 text-sm font-medium text-gray-600"
+              className="flex-1 rounded-full border border-gray-200 py-2.5 text-sm font-medium text-gray-600 dark:border-neutral-700 dark:text-gray-300"
             >
               Schließen
             </button>
             <button
               onClick={() => setConfirmDelete(true)}
-              className="flex-1 rounded-full bg-rose-100 py-2.5 text-sm font-medium text-rose-700"
+              className="flex-1 rounded-full bg-rose-100 py-2.5 text-sm font-medium text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
             >
               Löschen
             </button>

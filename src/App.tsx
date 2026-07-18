@@ -11,8 +11,8 @@ export default function App() {
   return (
     <WardrobeProvider>
       <HashRouter>
-        <div className="min-h-screen bg-rose-50">
-          <div className="mx-auto min-h-screen max-w-md bg-rose-50 pb-24 safe-top">
+        <div className="min-h-screen bg-rose-50 dark:bg-neutral-950">
+          <div className="mx-auto min-h-screen max-w-md bg-rose-50 pb-24 safe-top dark:bg-neutral-950">
             <Routes>
               <Route path="/" element={<WardrobePage />} />
               <Route path="/hinzufuegen" element={<AddItemPage />} />

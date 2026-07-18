@@ -37,7 +37,9 @@ function Chip({
     <button
       onClick={onClick}
       className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition ${
-        active ? "bg-rose-600 text-white" : "bg-white text-gray-500 border border-rose-100"
+        active
+          ? "bg-rose-600 text-white"
+          : "bg-white text-gray-500 border border-rose-100 dark:bg-neutral-900 dark:text-gray-400 dark:border-neutral-700"
       }`}
     >
       <span>{emoji}</span>

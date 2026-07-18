@@ -110,7 +110,7 @@ export default function AddItemPage() {
       {step === "capture" && (
         <div className="flex flex-col items-center gap-4 px-6 py-10">
           {error && (
-            <div className="w-full rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="w-full rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-300">
               {error}
               {originalPhoto && (
                 <button
@@ -123,7 +123,7 @@ export default function AddItemPage() {
             </div>
           )}
           {!hasApiKey() && (
-            <div className="w-full rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            <div className="w-full rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
               Kein remove.bg API-Key hinterlegt. Fotos werden ohne automatische Freistellung
               gespeichert.{" "}
               <button
@@ -143,7 +143,7 @@ export default function AddItemPage() {
           </button>
           <button
             onClick={() => galleryInputRef.current?.click()}
-            className="w-full rounded-full border border-rose-200 py-3.5 text-sm font-medium text-rose-600"
+            className="w-full rounded-full border border-rose-200 py-3.5 text-sm font-medium text-rose-600 dark:border-rose-900 dark:text-rose-400"
           >
             Aus Galerie wählen
           </button>
@@ -152,14 +152,14 @@ export default function AddItemPage() {
 
       {step === "processing" && (
         <div className="flex flex-col items-center gap-4 px-6 py-16 text-center">
-          <div className="h-14 w-14 animate-spin rounded-full border-4 border-rose-200 border-t-rose-600" />
-          <p className="text-sm text-gray-500">Hintergrund wird entfernt…</p>
+          <div className="h-14 w-14 animate-spin rounded-full border-4 border-rose-200 border-t-rose-600 dark:border-neutral-700 dark:border-t-rose-500" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Hintergrund wird entfernt…</p>
         </div>
       )}
 
       {step === "form" && (
         <div className="px-4 pb-6">
-          <div className="mb-4 flex items-center justify-center rounded-2xl bg-[repeating-conic-gradient(#f9f4f4_0%_25%,#ffffff_0%_50%)] bg-[length:20px_20px] p-4">
+          <div className="mb-4 flex items-center justify-center rounded-2xl bg-[repeating-conic-gradient(#f9f4f4_0%_25%,#ffffff_0%_50%)] bg-[length:20px_20px] p-4 dark:bg-[repeating-conic-gradient(#262626_0%_25%,#171717_0%_50%)]">
             {previewUrl && (
               <img src={previewUrl} alt="Vorschau" className="max-h-64 object-contain" />
             )}
@@ -170,15 +170,15 @@ export default function AddItemPage() {
             </p>
           )}
 
-          <label className="mb-1 block text-xs font-medium text-gray-500">Name</label>
+          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="z. B. Blaue Jeansjacke"
-            className="mb-3 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400"
+            className="mb-3 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-100"
           />
 
-          <label className="mb-1 block text-xs font-medium text-gray-500">Kategorie</label>
+          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Kategorie</label>
           <div className="mb-3 grid grid-cols-4 gap-2">
             {CATEGORIES.map((c) => (
               <button
@@ -186,8 +186,8 @@ export default function AddItemPage() {
                 onClick={() => setCategory(c.id)}
                 className={`flex flex-col items-center gap-0.5 rounded-xl border py-2 text-[11px] ${
                   category === c.id
-                    ? "border-rose-500 bg-rose-50 text-rose-700"
-                    : "border-gray-200 text-gray-500"
+                    ? "border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"
+                    : "border-gray-200 text-gray-500 dark:border-neutral-700 dark:text-gray-400"
                 }`}
               >
                 <span className="text-lg">{c.emoji}</span>
@@ -196,18 +196,18 @@ export default function AddItemPage() {
             ))}
           </div>
 
-          <label className="mb-1 block text-xs font-medium text-gray-500">Farbe (optional)</label>
+          <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">Farbe (optional)</label>
           <input
             value={color}
             onChange={(e) => setColor(e.target.value)}
             placeholder="z. B. Blau"
-            className="mb-5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400"
+            className="mb-5 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-100"
           />
 
           <div className="flex gap-2">
             <button
               onClick={reset}
-              className="flex-1 rounded-full border border-gray-200 py-3 text-sm font-medium text-gray-600"
+              className="flex-1 rounded-full border border-gray-200 py-3 text-sm font-medium text-gray-600 dark:border-neutral-700 dark:text-gray-300"
             >
               Verwerfen
             </button>

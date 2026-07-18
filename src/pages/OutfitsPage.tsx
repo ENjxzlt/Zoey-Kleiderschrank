@@ -24,11 +24,11 @@ export default function OutfitsPage() {
       />
 
       {loading ? (
-        <p className="px-4 py-10 text-center text-sm text-gray-400">Lädt…</p>
+        <p className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">Lädt…</p>
       ) : outfits.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-8 py-16 text-center">
           <span className="text-4xl">👗</span>
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Noch keine Outfits. Stelle aus deinen Kleidungsstücken dein erstes Outfit zusammen.
           </p>
           <button
@@ -72,19 +72,19 @@ function OutfitCard({
   return (
     <button
       onClick={onClick}
-      className="overflow-hidden rounded-2xl border border-rose-100 bg-white text-left shadow-sm"
+      className="overflow-hidden rounded-2xl border border-rose-100 bg-white text-left shadow-sm dark:border-neutral-700 dark:bg-neutral-900"
     >
-      <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-0.5 bg-rose-50 p-1">
+      <div className="grid aspect-square grid-cols-2 grid-rows-2 gap-0.5 bg-rose-50 p-1 dark:bg-neutral-800">
         {items.length === 0 && <div className="col-span-2 row-span-2" />}
         {items.map((item) => (
-          <div key={item.id} className="flex items-center justify-center overflow-hidden rounded-lg bg-white">
+          <div key={item.id} className="flex items-center justify-center overflow-hidden rounded-lg bg-white dark:bg-neutral-900">
             <ImageThumb image={item.image} alt={item.name} className="h-full w-full object-contain p-1" />
           </div>
         ))}
       </div>
       <div className="px-2 py-1.5">
-        <p className="truncate text-xs font-medium text-gray-700">{outfit.name || "Ohne Namen"}</p>
-        <p className="text-[10px] text-gray-400">{outfit.itemIds.length} Teile</p>
+        <p className="truncate text-xs font-medium text-gray-700 dark:text-gray-300">{outfit.name || "Ohne Namen"}</p>
+        <p className="text-[10px] text-gray-400 dark:text-gray-500">{outfit.itemIds.length} Teile</p>
       </div>
     </button>
   );

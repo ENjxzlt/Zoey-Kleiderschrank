@@ -25,7 +25,7 @@ export default function OutfitFigure({ items, onRemove }: OutfitFigureProps) {
     <div className="relative mx-auto aspect-[3/5] w-full max-w-[240px]">
       <svg
         viewBox="0 0 120 200"
-        className="absolute inset-0 h-full w-full text-rose-200"
+        className="absolute inset-0 h-full w-full text-rose-200 dark:text-neutral-700"
         fill="none"
         stroke="currentColor"
         strokeWidth="2.5"
@@ -53,7 +53,7 @@ export default function OutfitFigure({ items, onRemove }: OutfitFigureProps) {
             <button
               key={a.id}
               onClick={() => onRemove(a)}
-              className="h-6 w-6 overflow-hidden rounded-full border border-white bg-rose-50 shadow"
+              className="h-6 w-6 overflow-hidden rounded-full border border-white bg-rose-50 shadow dark:border-neutral-800 dark:bg-neutral-800"
             >
               <ImageThumb image={a.image} alt={a.name} className="h-full w-full object-contain" />
             </button>
@@ -127,7 +127,7 @@ function FigureZone({
     if (optional) return null;
     return (
       <div
-        className="absolute flex items-center justify-center rounded-xl border border-dashed border-rose-200 text-lg opacity-40"
+        className="absolute flex items-center justify-center rounded-xl border border-dashed border-rose-200 text-lg opacity-40 dark:border-neutral-700"
         style={{ ...style, zIndex }}
       >
         {emoji}
