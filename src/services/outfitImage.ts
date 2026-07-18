@@ -99,17 +99,6 @@ function withGarmentShadow(ctx: CanvasRenderingContext2D, draw: () => void) {
   ctx.restore();
 }
 
-/** Soft contact shadow so garments lift off the background regardless of
- * their own color, matching the on-screen drop-shadow-md on each item. */
-function withGarmentShadow(ctx: CanvasRenderingContext2D, draw: () => void) {
-  ctx.save();
-  ctx.shadowColor = "rgba(20, 10, 20, 0.32)";
-  ctx.shadowBlur = 22;
-  ctx.shadowOffsetY = 9;
-  draw();
-  ctx.restore();
-}
-
 /** Draws a garment the same way the CSS does: object-contain within the zone,
  * scaled and translated around the zone's own center. */
 function drawZoneItem(
