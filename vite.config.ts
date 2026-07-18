@@ -2,8 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
-// Repo is served from https://<user>.github.io/Zoey-Kleiderschrank/
-const base = "/Zoey-Kleiderschrank/";
+// Repo is served from https://<user>.github.io/Zoeys-Kleiderschrank/
+const base = "/Zoeys-Kleiderschrank/";
 
 export default defineConfig({
   base,

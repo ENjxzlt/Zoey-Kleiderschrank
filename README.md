@@ -95,7 +95,7 @@ Bei jedem Push auf `main` wird die App automatisch per GitHub Actions
 
 Falls GitHub Pages im Repository noch nicht aktiviert ist: unter **Settings → Pages** als
 **Source** „GitHub Actions" auswählen. Die Seite ist danach unter
-`https://<benutzername>.github.io/Zoey-Kleiderschrank/` erreichbar.
+`https://<benutzername>.github.io/Zoeys-Kleiderschrank/` erreichbar.
 
 ## Tech-Stack
 
