@@ -5,6 +5,7 @@ export type Category =
   | "rock"
   | "jacke"
   | "schuhe"
+  | "kopfbedeckung"
   | "accessoire";
 
 export interface CategoryMeta {
@@ -20,6 +21,7 @@ export const CATEGORIES: CategoryMeta[] = [
   { id: "kleid", label: "Kleider", emoji: "👘" },
   { id: "jacke", label: "Jacken", emoji: "🧥" },
   { id: "schuhe", label: "Schuhe", emoji: "👟" },
+  { id: "kopfbedeckung", label: "Kopfbedeckungen", emoji: "🧢" },
   { id: "accessoire", label: "Accessoires", emoji: "👜" },
 ];
 
