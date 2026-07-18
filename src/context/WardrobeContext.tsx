@@ -15,6 +15,7 @@ interface WardrobeContextValue {
   outfits: Outfit[];
   loading: boolean;
   addItem: (item: ClothingItem) => Promise<void>;
+  updateItem: (item: ClothingItem) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
   saveOutfit: (outfit: Outfit) => Promise<void>;
   removeOutfit: (id: string) => Promise<void>;
@@ -45,6 +46,11 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
   const addItem = useCallback(async (item: ClothingItem) => {
     await db.putItem(item);
     setItems((prev) => [item, ...prev]);
+  }, []);
+
+  const updateItem = useCallback(async (item: ClothingItem) => {
+    await db.putItem(item);
+    setItems((prev) => prev.map((i) => (i.id === item.id ? item : i)));
   }, []);
 
   const removeItem = useCallback(async (id: string) => {
@@ -83,6 +89,7 @@ export function WardrobeProvider({ children }: { children: ReactNode }) {
     outfits,
     loading,
     addItem,
+    updateItem,
     removeItem,
     saveOutfit,
     removeOutfit,
