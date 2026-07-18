@@ -73,6 +73,17 @@ function drawStickFigure(ctx: CanvasRenderingContext2D, width: number) {
   ctx.restore();
 }
 
+/** Soft contact shadow so garments lift off the background regardless of
+ * their own color, matching the on-screen drop-shadow-md on each item. */
+function withGarmentShadow(ctx: CanvasRenderingContext2D, draw: () => void) {
+  ctx.save();
+  ctx.shadowColor = "rgba(20, 10, 20, 0.32)";
+  ctx.shadowBlur = 22;
+  ctx.shadowOffsetY = 9;
+  draw();
+  ctx.restore();
+}
+
 /** Draws a garment the same way the CSS does: object-contain within the zone,
  * scaled and translated around the zone's own center. */
 function drawZoneItem(
@@ -96,7 +107,9 @@ function drawZoneItem(
   const centerX = boxX + boxW / 2 + (position.x / 100) * boxW;
   const centerY = boxY + boxH / 2 + (position.y / 100) * boxH;
 
-  ctx.drawImage(img, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
+  withGarmentShadow(ctx, () => {
+    ctx.drawImage(img, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
+  });
 }
 
 function drawAccessory(
@@ -116,7 +129,9 @@ function drawAccessory(
   const drawW = img.width * fitScale * scale;
   const drawH = img.height * fitScale * scale;
 
-  ctx.drawImage(img, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
+  withGarmentShadow(ctx, () => {
+    ctx.drawImage(img, centerX - drawW / 2, centerY - drawH / 2, drawW, drawH);
+  });
 }
 
 export async function renderOutfitToBlob(
@@ -135,10 +150,23 @@ export async function renderOutfitToBlob(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas wird nicht unterstützt.");
 
-  const gradient = ctx.createLinearGradient(0, 0, 0, height);
-  gradient.addColorStop(0, "#fff1f4");
-  gradient.addColorStop(1, "#ffe4ea");
-  ctx.fillStyle = gradient;
+  // A vignette (light center, deeper rose edges) instead of a flat near-white
+  // fill, so garments - including light/white ones - stand out clearly
+  // instead of blending into the background.
+  const vignetteCenterY = titleHeight + figureHeight * 0.45;
+  const vignetteRadius = Math.max(width, height) * 0.75;
+  const vignette = ctx.createRadialGradient(
+    width / 2,
+    vignetteCenterY,
+    0,
+    width / 2,
+    vignetteCenterY,
+    vignetteRadius,
+  );
+  vignette.addColorStop(0, "#fffaf9");
+  vignette.addColorStop(0.55, "#fbd3e0");
+  vignette.addColorStop(1, "#dd7ba6");
+  ctx.fillStyle = vignette;
   ctx.fillRect(0, 0, width, height);
 
   if (outfitName.trim()) {
