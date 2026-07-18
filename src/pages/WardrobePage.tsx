@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWardrobe } from "../context/WardrobeContext";
 import { useObjectUrl } from "../hooks/useObjectUrl";
@@ -7,26 +7,78 @@ import ItemCard from "../components/ItemCard";
 import PageHeader from "../components/PageHeader";
 import { categoryEmoji, categoryLabel, type Category } from "../types";
 import type { ClothingItem } from "../types";
+import { sortItems } from "../services/sortItems";
+import {
+  SORT_LABELS,
+  getGridDensity,
+  getSortOption,
+  setGridDensity,
+  setSortOption,
+  type GridDensity,
+  type SortOption,
+} from "../services/wardrobeViewPrefs";
 
 export default function WardrobePage() {
   const { items, loading, removeItem } = useWardrobe();
   const [filter, setFilter] = useState<Category | "alle">("alle");
   const [selected, setSelected] = useState<ClothingItem | null>(null);
+  const [sort, setSort] = useState<SortOption>(getSortOption);
+  const [density, setDensity] = useState<GridDensity>(getGridDensity);
   const navigate = useNavigate();
+
+  useEffect(() => setSortOption(sort), [sort]);
+  useEffect(() => setGridDensity(density), [density]);
+
+  const counts = useMemo(() => {
+    const result: Partial<Record<Category | "alle", number>> = { alle: items.length };
+    for (const item of items) {
+      result[item.category] = (result[item.category] ?? 0) + 1;
+    }
+    return result;
+  }, [items]);
 
   const filtered = useMemo(
     () => (filter === "alle" ? items : items.filter((i) => i.category === filter)),
     [items, filter],
   );
 
+  const sorted = useMemo(() => sortItems(filtered, sort), [filtered, sort]);
+
   return (
     <div>
-      <PageHeader title="Mein Kleiderschrank" subtitle={`${items.length} Teile`} />
-      <CategoryPicker value={filter} onChange={setFilter} />
+      <PageHeader
+        title="Mein Kleiderschrank"
+        subtitle={`${items.length} Teile`}
+        action={
+          items.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as SortOption)}
+                className="rounded-full border border-rose-100 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-600 outline-none dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-300"
+              >
+                {Object.entries(SORT_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => setDensity(density === "kompakt" ? "gross" : "kompakt")}
+                title={density === "kompakt" ? "Größere Kacheln" : "Kompaktere Kacheln"}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-rose-100 bg-white text-sm text-gray-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-300"
+              >
+                {density === "kompakt" ? "⊞" : "▦"}
+              </button>
+            </div>
+          )
+        }
+      />
+      <CategoryPicker value={filter} onChange={setFilter} counts={counts} />
 
       {loading ? (
         <p className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">Lädt…</p>
-      ) : filtered.length === 0 ? (
+      ) : sorted.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-8 py-16 text-center">
           <span className="text-4xl">🧺</span>
           <p className="text-sm text-gray-400 dark:text-gray-500">
@@ -44,9 +96,14 @@ export default function WardrobePage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-3 px-4 pb-4">
-          {filtered.map((item) => (
-            <ItemCard key={item.id} item={item} onClick={() => setSelected(item)} />
+        <div className={`grid gap-3 px-4 pb-4 ${density === "gross" ? "grid-cols-2" : "grid-cols-3"}`}>
+          {sorted.map((item) => (
+            <ItemCard
+              key={item.id}
+              item={item}
+              dense={density === "gross"}
+              onClick={() => setSelected(item)}
+            />
           ))}
         </div>
       )}
