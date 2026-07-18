@@ -7,11 +7,15 @@ zusammenstellen.
 ## Funktionen
 
 - 📸 Kleidungsstücke direkt mit der Handykamera fotografieren (oder aus der Galerie wählen)
+- 🔍 Alternativ: nur den Produktnamen eingeben und ein Bild automatisch aus dem Internet laden
+  (Google-Bildersuche, optionales Setup)
 - ✂️ Automatische Freistellung des Hintergrunds direkt im Browser (kein Account nötig), mit
   [remove.bg](https://www.remove.bg/) als optionalem Fallback
 - 🧺 Kleiderschrank nach Kategorien filtern (Oberteile, Hosen, Kleider, Röcke, Jacken, Schuhe,
-  Accessoires)
-- 👗 Outfits aus einzelnen Teilen zusammenstellen und speichern
+  Kopfbedeckungen, Accessoires)
+- 👗 Outfits aus einzelnen Teilen zusammenstellen, Größe & Position jedes Teils per Ziehen/Regler
+  anpassen und speichern
+- 📷 Fertiges Outfit als Bild herunterladen (z. B. zum Teilen)
 - 📴 Läuft komplett offline / lokal — alle Daten bleiben nur auf dem eigenen Gerät (IndexedDB),
   kein Server, kein Account nötig
 - 💾 Backup als Datei exportieren/importieren (z. B. um auf ein neues Handy umzuziehen)
@@ -34,6 +38,21 @@ kostenloser remove.bg API-Key als Fallback hinterlegt werden:
 Der Key wird ausschließlich lokal im Browser gespeichert (`localStorage`) und niemals an einen
 eigenen Server übertragen. Ohne API-Key funktioniert die App weiterhin — falls die On-Device-
 Freistellung fehlschlägt, kann das Foto stattdessen ohne Freistellung übernommen werden.
+
+## Optional: Teil per Produktname statt Foto hinzufügen
+
+Statt eines eigenen Fotos kann beim Hinzufügen eines Teils auch nur der Produktname eingegeben
+werden — die App sucht dann automatisch passende Bilder über die Google Custom Search API. Dafür
+einmalig einrichten:
+
+1. In der [Google Cloud Console](https://console.cloud.google.com/) ein Projekt anlegen und die
+   „Custom Search API" aktivieren, dort einen API-Key erstellen
+2. Auf [programmablesearchengine.google.com](https://programmablesearchengine.google.com/) eine
+   Suchmaschine für „das gesamte Web" anlegen und die Search Engine ID (`cx`) kopieren
+3. Beides in der App unter **Einstellungen → Produktbild-Suche** einfügen und speichern
+
+Kostenloses Kontingent: 100 Suchen/Tag. Ohne diese Einrichtung funktioniert die App weiterhin ganz
+normal per Foto.
 
 ## Entwicklung
 
