@@ -42,17 +42,30 @@ Freistellung fehlschlägt, kann das Foto stattdessen ohne Freistellung übernomm
 ## Optional: Teil per Produktname statt Foto hinzufügen
 
 Statt eines eigenen Fotos kann beim Hinzufügen eines Teils auch nur der Produktname eingegeben
-werden — die App sucht dann automatisch passende Bilder über die Google Custom Search API. Dafür
-einmalig einrichten:
-
-1. In der [Google Cloud Console](https://console.cloud.google.com/) ein Projekt anlegen und die
-   „Custom Search API" aktivieren, dort einen API-Key erstellen
-2. Auf [programmablesearchengine.google.com](https://programmablesearchengine.google.com/) eine
-   Suchmaschine für „das gesamte Web" anlegen und die Search Engine ID (`cx`) kopieren
-3. Beides in der App unter **Einstellungen → Produktbild-Suche** einfügen und speichern
-
+werden — die App sucht dann automatisch passende Bilder über die Google Custom Search API.
 Kostenloses Kontingent: 100 Suchen/Tag. Ohne diese Einrichtung funktioniert die App weiterhin ganz
-normal per Foto.
+normal per Foto. Auch in der App selbst unter **Einstellungen → Produktbild-Suche** aufklappbar.
+
+**Teil 1 — API-Key (Google Cloud Console)**
+
+1. [Custom Search API](https://console.cloud.google.com/apis/library/customsearch.googleapis.com)
+   öffnen (ggf. mit Google-Konto einloggen)
+2. Oben ein Projekt auswählen oder ein neues anlegen („Projekt erstellen")
+3. Auf der Seite „Custom Search API" den Button „Aktivieren" klicken
+4. Im linken Menü zu „Anmeldedaten" (Credentials) wechseln → oben „+ Anmeldedaten erstellen" →
+   „API-Schlüssel" auswählen
+5. Den angezeigten Key kopieren
+
+**Teil 2 — Search Engine ID (Programmable Search Engine)**
+
+1. [Neue Suchmaschine anlegen](https://programmablesearchengine.google.com/controlpanel/create)
+2. Feld „Sites to search" leer lassen und den Schalter **„Search the entire web"** aktivieren
+3. Einen Namen vergeben und auf „Create" klicken
+4. In der Suchmaschinen-Übersicht auf „Customize" bzw. „Control Panel" gehen, dort unter
+   **„Basics"** die **„Search engine ID"** kopieren — das ist der `cx`-Wert
+5. Im selben Bereich unter „Search features" den Schalter **„Image search"** auf „On" stellen
+
+Beide Werte in der App unter **Einstellungen → Produktbild-Suche** einfügen und speichern.
 
 ## Entwicklung
 
