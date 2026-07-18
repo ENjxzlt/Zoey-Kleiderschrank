@@ -44,5 +44,7 @@ export interface Outfit {
   id: string;
   name: string;
   itemIds: string[];
+  /** Per-item size multiplier on the outfit figure (1 = auto-fit). */
+  itemScales?: Record<string, number>;
   createdAt: number;
 }

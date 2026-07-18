@@ -20,6 +20,7 @@ export default function OutfitBuilderPage() {
 
   const [name, setName] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [scales, setScales] = useState<Record<string, number>>({});
   const [filter, setFilter] = useState<Category | "alle">("alle");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -28,6 +29,7 @@ export default function OutfitBuilderPage() {
     if (existing && !initialized) {
       setName(existing.name);
       setSelectedIds(existing.itemIds);
+      setScales(existing.itemScales ?? {});
       setInitialized(true);
     }
   }, [existing, initialized]);
@@ -43,12 +45,27 @@ export default function OutfitBuilderPage() {
   );
 
   function pick(item: ClothingItem) {
-    setSelectedIds((prev) => {
-      if (prev.includes(item.id)) return prev.filter((i) => i !== item.id);
-      if (item.category === "accessoire") return [...prev, item.id];
-      const withoutSameCategory = prev.filter((id) => itemsById.get(id)?.category !== item.category);
-      return [...withoutSameCategory, item.id];
-    });
+    if (selectedIds.includes(item.id)) {
+      setSelectedIds((prev) => prev.filter((i) => i !== item.id));
+      setScales((prev) => {
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      });
+      return;
+    }
+    if (item.category === "accessoire") {
+      setSelectedIds((prev) => [...prev, item.id]);
+      return;
+    }
+    setSelectedIds((prev) => [
+      ...prev.filter((id) => itemsById.get(id)?.category !== item.category),
+      item.id,
+    ]);
+  }
+
+  function setScale(itemId: string, scale: number) {
+    setScales((prev) => ({ ...prev, [itemId]: scale }));
   }
 
   async function handleSave() {
@@ -57,6 +74,7 @@ export default function OutfitBuilderPage() {
       id: existing?.id ?? crypto.randomUUID(),
       name: name.trim() || "Ohne Namen",
       itemIds: selectedIds,
+      itemScales: Object.fromEntries(selectedIds.map((sid) => [sid, scales[sid] ?? 1])),
       createdAt: existing?.createdAt ?? Date.now(),
     });
     navigate("/outfits");
@@ -81,11 +99,19 @@ export default function OutfitBuilderPage() {
         />
 
         <div className="mb-3 rounded-2xl border border-dashed border-rose-200 bg-rose-50/50 p-3 dark:border-neutral-700 dark:bg-neutral-900/50">
-          <OutfitFigure items={selectedItems} onRemove={(item) => pick(item)} />
-          {selectedItems.length === 0 && (
+          <OutfitFigure
+            items={selectedItems}
+            scales={scales}
+            onScaleChange={setScale}
+            onRemove={(item) => pick(item)}
+          />
+          {selectedItems.length === 0 ? (
             <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
-              Wähle unten Teile aus – sie erscheinen an der Figur. Tippe ein Teil an der Figur an,
-              um es wieder zu entfernen.
+              Wähle unten Teile aus – sie erscheinen an der Figur.
+            </p>
+          ) : (
+            <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
+              Tippe ein Teil an, um die Größe anzupassen. Das ✕ entfernt es.
             </p>
           )}
         </div>
