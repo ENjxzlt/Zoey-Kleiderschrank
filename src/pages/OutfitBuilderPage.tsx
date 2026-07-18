@@ -77,13 +77,13 @@ export default function OutfitBuilderPage() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Name des Outfits"
-          className="mb-3 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400"
+          className="mb-3 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-rose-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-gray-100"
         />
 
-        <div className="mb-3 rounded-2xl border border-dashed border-rose-200 bg-rose-50/50 p-3">
+        <div className="mb-3 rounded-2xl border border-dashed border-rose-200 bg-rose-50/50 p-3 dark:border-neutral-700 dark:bg-neutral-900/50">
           <OutfitFigure items={selectedItems} onRemove={(item) => pick(item)} />
           {selectedItems.length === 0 && (
-            <p className="mt-2 text-center text-xs text-gray-400">
+            <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
               Wähle unten Teile aus – sie erscheinen an der Figur. Tippe ein Teil an der Figur an,
               um es wieder zu entfernen.
             </p>
@@ -94,7 +94,7 @@ export default function OutfitBuilderPage() {
       <CategoryPicker value={filter} onChange={setFilter} />
 
       {filteredItems.length === 0 ? (
-        <p className="px-4 py-10 text-center text-sm text-gray-400">
+        <p className="px-4 py-10 text-center text-sm text-gray-400 dark:text-gray-500">
           Keine Teile in dieser Kategorie.
         </p>
       ) : (
@@ -110,11 +110,11 @@ export default function OutfitBuilderPage() {
         </div>
       )}
 
-      <div className="sticky bottom-0 -mx-0 flex gap-2 border-t border-rose-100 bg-white px-4 py-3">
+      <div className="sticky bottom-0 -mx-0 flex gap-2 border-t border-rose-100 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900">
         {isEditing && (
           <button
             onClick={() => (confirmDelete ? handleDelete() : setConfirmDelete(true))}
-            className="rounded-full bg-rose-100 px-4 py-3 text-sm font-medium text-rose-700"
+            className="rounded-full bg-rose-100 px-4 py-3 text-sm font-medium text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
           >
             {confirmDelete ? "Wirklich löschen?" : "Löschen"}
           </button>

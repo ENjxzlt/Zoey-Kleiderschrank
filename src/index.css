@@ -6,6 +6,10 @@
   color-scheme: light;
 }
 
+:root.dark {
+  color-scheme: dark;
+}
+
 html,
 body {
   overscroll-behavior-y: contain;

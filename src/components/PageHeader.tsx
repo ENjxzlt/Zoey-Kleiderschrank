@@ -12,8 +12,8 @@ export default function PageHeader({
   return (
     <div className="flex items-center justify-between px-4 pb-2 pt-5">
       <div>
-        <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
-        {subtitle && <p className="text-xs text-gray-400">{subtitle}</p>}
+        <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">{title}</h1>
+        {subtitle && <p className="text-xs text-gray-400 dark:text-gray-500">{subtitle}</p>}
       </div>
       {action}
     </div>

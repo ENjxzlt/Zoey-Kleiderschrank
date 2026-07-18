@@ -5,13 +5,13 @@ const linkBase =
 
 export default function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-20 border-t border-rose-100 bg-white/95 backdrop-blur safe-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-20 border-t border-rose-100 bg-white/95 backdrop-blur safe-bottom dark:border-neutral-800 dark:bg-neutral-900/95">
       <div className="mx-auto grid max-w-md grid-cols-4 items-end px-2 pb-1 pt-2">
         <NavLink
           to="/"
           end
           className={({ isActive }) =>
-            `${linkBase} ${isActive ? "text-rose-600" : "text-gray-400"}`
+            `${linkBase} ${isActive ? "text-rose-600" : "text-gray-400 dark:text-gray-500"}`
           }
         >
           <span className="text-xl">🧺</span>
@@ -20,7 +20,7 @@ export default function BottomNav() {
         <NavLink
           to="/outfits"
           className={({ isActive }) =>
-            `${linkBase} ${isActive ? "text-rose-600" : "text-gray-400"}`
+            `${linkBase} ${isActive ? "text-rose-600" : "text-gray-400 dark:text-gray-500"}`
           }
         >
           <span className="text-xl">👗</span>
@@ -38,7 +38,7 @@ export default function BottomNav() {
         <NavLink
           to="/einstellungen"
           className={({ isActive }) =>
-            `${linkBase} ${isActive ? "text-rose-600" : "text-gray-400"}`
+            `${linkBase} ${isActive ? "text-rose-600" : "text-gray-400 dark:text-gray-500"}`
           }
         >
           <span className="text-xl">⚙️</span>
