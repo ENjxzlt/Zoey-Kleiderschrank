@@ -21,6 +21,7 @@ export default function OutfitBuilderPage() {
   const [name, setName] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [scales, setScales] = useState<Record<string, number>>({});
+  const [positions, setPositions] = useState<Record<string, { x: number; y: number }>>({});
   const [filter, setFilter] = useState<Category | "alle">("alle");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -30,6 +31,7 @@ export default function OutfitBuilderPage() {
       setName(existing.name);
       setSelectedIds(existing.itemIds);
       setScales(existing.itemScales ?? {});
+      setPositions(existing.itemPositions ?? {});
       setInitialized(true);
     }
   }, [existing, initialized]);
@@ -52,6 +54,11 @@ export default function OutfitBuilderPage() {
         delete next[item.id];
         return next;
       });
+      setPositions((prev) => {
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      });
       return;
     }
     if (item.category === "accessoire") {
@@ -68,6 +75,10 @@ export default function OutfitBuilderPage() {
     setScales((prev) => ({ ...prev, [itemId]: scale }));
   }
 
+  function setPosition(itemId: string, position: { x: number; y: number }) {
+    setPositions((prev) => ({ ...prev, [itemId]: position }));
+  }
+
   async function handleSave() {
     if (selectedIds.length === 0) return;
     await saveOutfit({
@@ -75,6 +86,9 @@ export default function OutfitBuilderPage() {
       name: name.trim() || "Ohne Namen",
       itemIds: selectedIds,
       itemScales: Object.fromEntries(selectedIds.map((sid) => [sid, scales[sid] ?? 1])),
+      itemPositions: Object.fromEntries(
+        selectedIds.map((sid) => [sid, positions[sid] ?? { x: 0, y: 0 }]),
+      ),
       createdAt: existing?.createdAt ?? Date.now(),
     });
     navigate("/outfits");
@@ -103,6 +117,8 @@ export default function OutfitBuilderPage() {
             items={selectedItems}
             scales={scales}
             onScaleChange={setScale}
+            positions={positions}
+            onPositionChange={setPosition}
             onRemove={(item) => pick(item)}
           />
           {selectedItems.length === 0 ? (
@@ -111,7 +127,7 @@ export default function OutfitBuilderPage() {
             </p>
           ) : (
             <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
-              Tippe ein Teil an, um die Größe anzupassen. Das ✕ entfernt es.
+              Ziehe ein Teil, um es zu verschieben. Antippen passt die Größe an, das ✕ entfernt es.
             </p>
           )}
         </div>

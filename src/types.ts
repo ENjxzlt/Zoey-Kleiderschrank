@@ -46,5 +46,7 @@ export interface Outfit {
   itemIds: string[];
   /** Per-item size multiplier on the outfit figure (1 = auto-fit). */
   itemScales?: Record<string, number>;
+  /** Per-item drag offset on the outfit figure, in % of the figure size. */
+  itemPositions?: Record<string, { x: number; y: number }>;
   createdAt: number;
 }
