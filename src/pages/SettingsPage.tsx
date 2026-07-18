@@ -96,12 +96,13 @@ export default function SettingsPage() {
 
       <section className="mb-6 rounded-2xl border border-rose-100 bg-white p-4 dark:border-neutral-700 dark:bg-neutral-900">
         <h2 className="mb-1 text-sm font-semibold text-gray-800 dark:text-gray-100">
-          Freistellung (remove.bg)
+          Freistellung: remove.bg als Fallback
         </h2>
         <p className="mb-3 text-xs text-gray-400 dark:text-gray-500">
-          Für die automatische Hintergrundentfernung wird ein kostenloser API-Key von{" "}
-          <span className="font-medium">remove.bg</span> benötigt. Der Key wird nur lokal auf
-          diesem Gerät gespeichert.
+          Fotos werden standardmäßig direkt auf dem Gerät freigestellt – kein Account nötig.
+          Falls das auf diesem Gerät mal nicht klappt, wird optional dieser{" "}
+          <span className="font-medium">remove.bg</span> API-Key als Fallback genutzt. Der Key
+          wird nur lokal auf diesem Gerät gespeichert.
         </p>
         <input
           value={key}

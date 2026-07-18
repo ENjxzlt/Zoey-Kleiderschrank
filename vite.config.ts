@@ -39,6 +39,20 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+        // The ONNX/WASM runtime for on-device background removal is only needed
+        // once a photo is actually processed - don't force it into the initial
+        // install for everyone, but still cache it long-term after first use.
+        globIgnores: ["**/ort*.{js,mjs}"],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => /\/ort.*\.(js|mjs|wasm)$/.test(url.pathname),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "onnx-runtime",
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
       },
     }),
   ],

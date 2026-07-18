@@ -7,7 +7,8 @@ zusammenstellen.
 ## Funktionen
 
 - 📸 Kleidungsstücke direkt mit der Handykamera fotografieren (oder aus der Galerie wählen)
-- ✂️ Automatische Freistellung des Hintergrunds über [remove.bg](https://www.remove.bg/)
+- ✂️ Automatische Freistellung des Hintergrunds direkt im Browser (kein Account nötig), mit
+  [remove.bg](https://www.remove.bg/) als optionalem Fallback
 - 🧺 Kleiderschrank nach Kategorien filtern (Oberteile, Hosen, Kleider, Röcke, Jacken, Schuhe,
   Accessoires)
 - 👗 Outfits aus einzelnen Teilen zusammenstellen und speichern
@@ -16,18 +17,23 @@ zusammenstellen.
 - 💾 Backup als Datei exportieren/importieren (z. B. um auf ein neues Handy umzuziehen)
 - 📱 Installierbar als App auf dem Homescreen (PWA)
 
-## Einmalige Einrichtung: Freistellungs-API
+## Freistellung: on-device zuerst, remove.bg als Fallback
 
-Die automatische Freistellung nutzt die API von remove.bg direkt aus dem Browser. Dafür wird ein
-kostenloser API-Key benötigt:
+Die automatische Hintergrundentfernung läuft standardmäßig komplett im Browser
+([`@imgly/background-removal`](https://github.com/imgly/background-removal-js), WASM/ONNX) — kein
+Account, kein API-Key, kein Server, keine Kosten. Kein Foto verlässt dabei das Gerät; einmalig wird
+ein KI-Modell heruntergeladen und danach vom Service Worker gecacht.
+
+Falls das auf einem Gerät mal nicht funktioniert (z. B. sehr alter Browser), kann optional ein
+kostenloser remove.bg API-Key als Fallback hinterlegt werden:
 
 1. Auf [remove.bg/api](https://www.remove.bg/api) einen kostenlosen Account erstellen
 2. Den API-Key kopieren
 3. In der App unter **Einstellungen → Freistellung** einfügen und speichern
 
 Der Key wird ausschließlich lokal im Browser gespeichert (`localStorage`) und niemals an einen
-eigenen Server übertragen. Ohne API-Key funktioniert die App weiterhin, Fotos werden dann aber
-ohne automatische Freistellung gespeichert.
+eigenen Server übertragen. Ohne API-Key funktioniert die App weiterhin — falls die On-Device-
+Freistellung fehlschlägt, kann das Foto stattdessen ohne Freistellung übernommen werden.
 
 ## Entwicklung
 
@@ -58,4 +64,5 @@ Falls GitHub Pages im Repository noch nicht aktiviert ist: unter **Settings → 
 - Tailwind CSS (mobile-first)
 - IndexedDB (über [`idb`](https://github.com/jakearchibald/idb)) für lokale Datenspeicherung
 - [`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/) für Installierbarkeit & Offline-Support
-- [remove.bg API](https://www.remove.bg/api) für automatische Hintergrundentfernung
+- [`@imgly/background-removal`](https://github.com/imgly/background-removal-js) für
+  On-Device-Hintergrundentfernung, [remove.bg API](https://www.remove.bg/api) als Fallback

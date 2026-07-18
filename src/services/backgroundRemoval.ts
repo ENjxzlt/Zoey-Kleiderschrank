@@ -1,5 +1,3 @@
-import { cropToOpaqueBounds } from "./imageCrop";
-
 const REMOVE_BG_ENDPOINT = "https://api.remove.bg/v1.0/removebg";
 
 export class BackgroundRemovalError extends Error {}
@@ -7,6 +5,7 @@ export class BackgroundRemovalError extends Error {}
 /**
  * Sends a photo to remove.bg and returns a PNG blob with a transparent
  * background. Requires the user's own remove.bg API key (see Einstellungen).
+ * Used as a fallback when the on-device removal fails.
  */
 export async function removeBackground(image: Blob, apiKey: string): Promise<Blob> {
   if (!apiKey) {
@@ -56,6 +55,5 @@ export async function removeBackground(image: Blob, apiKey: string): Promise<Blo
   }
 
   const arrayBuffer = await response.arrayBuffer();
-  const rawBlob = new Blob([arrayBuffer], { type: "image/png" });
-  return cropToOpaqueBounds(rawBlob);
+  return new Blob([arrayBuffer], { type: "image/png" });
 }

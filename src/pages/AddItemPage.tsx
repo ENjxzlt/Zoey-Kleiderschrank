@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { useWardrobe } from "../context/WardrobeContext";
 import { useObjectUrl } from "../hooks/useObjectUrl";
 import PageHeader from "../components/PageHeader";
-import { removeBackground, BackgroundRemovalError } from "../services/backgroundRemoval";
-import { getApiKey, hasApiKey } from "../services/apiKey";
+import { processPhoto } from "../services/imageProcessing";
+import { LocalRemovalError } from "../services/localBackgroundRemoval";
+import { BackgroundRemovalError } from "../services/backgroundRemoval";
+import { getApiKey } from "../services/apiKey";
 import { CATEGORIES, type Category } from "../types";
 
 type Step = "capture" | "processing" | "form";
@@ -20,6 +22,8 @@ export default function AddItemPage() {
   const [finalImage, setFinalImage] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [skippedRemoval, setSkippedRemoval] = useState(false);
+  const [usedFallback, setUsedFallback] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState<Category>(CATEGORIES[0].id);
@@ -33,22 +37,20 @@ export default function AddItemPage() {
     setOriginalPhoto(file);
     setError(null);
     setSkippedRemoval(false);
-
-    if (!hasApiKey()) {
-      setFinalImage(file);
-      setSkippedRemoval(true);
-      setStep("form");
-      return;
-    }
-
+    setUsedFallback(false);
+    setProgress(0);
     setStep("processing");
+
     try {
-      const result = await removeBackground(file, getApiKey());
-      setFinalImage(result);
+      const result = await processPhoto(file, getApiKey(), setProgress);
+      setFinalImage(result.image);
+      setUsedFallback(result.method === "remote");
       setStep("form");
     } catch (e) {
       const message =
-        e instanceof BackgroundRemovalError ? e.message : "Unbekannter Fehler bei der Freistellung.";
+        e instanceof LocalRemovalError || e instanceof BackgroundRemovalError
+          ? e.message
+          : "Unbekannter Fehler bei der Freistellung.";
       setError(message);
       setFinalImage(null);
       setStep("capture");
@@ -83,6 +85,7 @@ export default function AddItemPage() {
     setFinalImage(null);
     setError(null);
     setSkippedRemoval(false);
+    setUsedFallback(false);
     setName("");
     setColor("");
   }
@@ -122,18 +125,6 @@ export default function AddItemPage() {
               )}
             </div>
           )}
-          {!hasApiKey() && (
-            <div className="w-full rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-              Kein remove.bg API-Key hinterlegt. Fotos werden ohne automatische Freistellung
-              gespeichert.{" "}
-              <button
-                onClick={() => navigate("/einstellungen")}
-                className="font-medium underline"
-              >
-                Jetzt einrichten
-              </button>
-            </div>
-          )}
           <span className="text-6xl">📸</span>
           <button
             onClick={() => cameraInputRef.current?.click()}
@@ -153,7 +144,13 @@ export default function AddItemPage() {
       {step === "processing" && (
         <div className="flex flex-col items-center gap-4 px-6 py-16 text-center">
           <div className="h-14 w-14 animate-spin rounded-full border-4 border-rose-200 border-t-rose-600 dark:border-neutral-700 dark:border-t-rose-500" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Hintergrund wird entfernt…</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Freistellung läuft direkt auf dem Gerät…
+            {progress > 0 && progress < 1 ? ` ${Math.round(progress * 100)}%` : ""}
+          </p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Beim ersten Mal wird einmalig ein Modell geladen – das kann etwas dauern.
+          </p>
         </div>
       )}
 
@@ -165,8 +162,14 @@ export default function AddItemPage() {
             )}
           </div>
           {skippedRemoval && (
-            <p className="mb-3 text-xs text-amber-600">
+            <p className="mb-3 text-xs text-amber-600 dark:text-amber-400">
               Hinweis: Dieses Foto wurde ohne automatische Freistellung gespeichert.
+            </p>
+          )}
+          {usedFallback && (
+            <p className="mb-3 text-xs text-amber-600 dark:text-amber-400">
+              Hinweis: Die Freistellung im Browser hat nicht geklappt, remove.bg wurde als
+              Fallback verwendet.
             </p>
           )}
 
