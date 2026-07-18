@@ -1,15 +1,27 @@
-import type { CSSProperties } from "react";
-import { useState } from "react";
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import { useRef, useState } from "react";
 import ImageThumb from "./ImageThumb";
 import type { Category, ClothingItem } from "../types";
 
 const MIN_SCALE = 0.6;
 const MAX_SCALE = 1.8;
+const MAX_OFFSET = 45;
+const DRAG_THRESHOLD_PX = 4;
+
+type Position = { x: number; y: number };
+
+const ORIGIN: Position = { x: 0, y: 0 };
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
 
 interface OutfitFigureProps {
   items: ClothingItem[];
   scales: Record<string, number>;
   onScaleChange: (itemId: string, scale: number) => void;
+  positions: Record<string, Position>;
+  onPositionChange: (itemId: string, position: Position) => void;
   onRemove: (item: ClothingItem) => void;
 }
 
@@ -21,9 +33,13 @@ export default function OutfitFigure({
   items,
   scales,
   onScaleChange,
+  positions,
+  onPositionChange,
   onRemove,
 }: OutfitFigureProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [livePosition, setLivePosition] = useState<{ id: string; pos: Position } | null>(null);
 
   const kleid = firstOf(items, "kleid");
   const oberteil = firstOf(items, "oberteil");
@@ -35,13 +51,65 @@ export default function OutfitFigure({
   const showKleid = Boolean(kleid) && !oberteil && !bottom;
   const activeItem = items.find((i) => i.id === activeId);
 
-  function toggleActive(item: ClothingItem) {
-    setActiveId((prev) => (prev === item.id ? null : item.id));
+  function positionOf(item: ClothingItem | undefined): Position {
+    if (!item) return ORIGIN;
+    if (livePosition?.id === item.id) return livePosition.pos;
+    return positions[item.id] ?? ORIGIN;
+  }
+
+  function startDrag(item: ClothingItem, e: ReactPointerEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    const drag = {
+      id: item.id,
+      startX: e.clientX,
+      startY: e.clientY,
+      startPos: positions[item.id] ?? ORIGIN,
+      pos: positions[item.id] ?? ORIGIN,
+      moved: false,
+    };
+
+    function onMove(ev: PointerEvent) {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const dxPx = ev.clientX - drag.startX;
+      const dyPx = ev.clientY - drag.startY;
+      if (Math.abs(dxPx) > DRAG_THRESHOLD_PX || Math.abs(dyPx) > DRAG_THRESHOLD_PX) {
+        drag.moved = true;
+      }
+      if (!drag.moved) return;
+
+      drag.pos = {
+        x: clamp(drag.startPos.x + (dxPx / rect.width) * 100, -MAX_OFFSET, MAX_OFFSET),
+        y: clamp(drag.startPos.y + (dyPx / rect.height) * 100, -MAX_OFFSET, MAX_OFFSET),
+      };
+      setLivePosition({ id: drag.id, pos: drag.pos });
+    }
+
+    function onEnd() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onEnd);
+      window.removeEventListener("pointercancel", onEnd);
+      setLivePosition(null);
+
+      if (drag.moved) {
+        onPositionChange(drag.id, drag.pos);
+      } else {
+        setActiveId((prev) => (prev === drag.id ? null : drag.id));
+      }
+    }
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onEnd);
+    window.addEventListener("pointercancel", onEnd);
   }
 
   return (
     <div>
-      <div className="relative mx-auto aspect-[3/5] w-full max-w-[240px]">
+      <div
+        ref={containerRef}
+        className="relative mx-auto aspect-[3/5] w-full max-w-[240px] touch-none"
+      >
         <svg
           viewBox="0 0 120 200"
           className="absolute inset-0 h-full w-full text-rose-200 dark:text-neutral-700"
@@ -62,9 +130,10 @@ export default function OutfitFigure({
           style={{ top: "1%", right: "2%", width: "26%", height: "16%" }}
           item={accessoires[0]}
           scale={accessoires[0] ? (scales[accessoires[0].id] ?? 1) : 1}
+          position={positionOf(accessoires[0])}
           active={accessoires[0]?.id === activeId}
           emoji="👜"
-          onSelect={toggleActive}
+          onPointerDownItem={startDrag}
           onRemove={onRemove}
           zIndex={40}
         />
@@ -88,9 +157,10 @@ export default function OutfitFigure({
             style={{ top: "17%", left: "18%", width: "64%", height: "58%" }}
             item={kleid}
             scale={kleid ? (scales[kleid.id] ?? 1) : 1}
+            position={positionOf(kleid)}
             active={kleid?.id === activeId}
             emoji="👘"
-            onSelect={toggleActive}
+            onPointerDownItem={startDrag}
             onRemove={onRemove}
             zIndex={20}
           />
@@ -100,9 +170,10 @@ export default function OutfitFigure({
               style={{ top: "21%", left: "23%", width: "54%", height: "32%" }}
               item={oberteil ?? kleid}
               scale={oberteil ? (scales[oberteil.id] ?? 1) : 1}
+              position={positionOf(oberteil)}
               active={oberteil?.id === activeId}
               emoji="👕"
-              onSelect={toggleActive}
+              onPointerDownItem={startDrag}
               onRemove={onRemove}
               zIndex={20}
             />
@@ -110,9 +181,10 @@ export default function OutfitFigure({
               style={{ top: "50%", left: "25%", width: "50%", height: "38%" }}
               item={bottom}
               scale={bottom ? (scales[bottom.id] ?? 1) : 1}
+              position={positionOf(bottom)}
               active={bottom?.id === activeId}
               emoji="👖"
-              onSelect={toggleActive}
+              onPointerDownItem={startDrag}
               onRemove={onRemove}
               zIndex={10}
             />
@@ -123,9 +195,10 @@ export default function OutfitFigure({
           style={{ top: "17%", left: "12%", width: "76%", height: "44%" }}
           item={jacke}
           scale={jacke ? (scales[jacke.id] ?? 1) : 1}
+          position={positionOf(jacke)}
           active={jacke?.id === activeId}
           emoji="🧥"
-          onSelect={toggleActive}
+          onPointerDownItem={startDrag}
           onRemove={onRemove}
           zIndex={30}
           optional
@@ -135,9 +208,10 @@ export default function OutfitFigure({
           style={{ top: "88%", left: "27%", width: "46%", height: "11%" }}
           item={schuhe}
           scale={schuhe ? (scales[schuhe.id] ?? 1) : 1}
+          position={positionOf(schuhe)}
           active={schuhe?.id === activeId}
           emoji="👟"
-          onSelect={toggleActive}
+          onPointerDownItem={startDrag}
           onRemove={onRemove}
           zIndex={15}
         />
@@ -155,8 +229,14 @@ export default function OutfitFigure({
             step={0.05}
             value={scales[activeItem.id] ?? 1}
             onChange={(e) => onScaleChange(activeItem.id, Number(e.target.value))}
-            className="w-28 accent-rose-600"
+            className="w-24 accent-rose-600"
           />
+          <button
+            onClick={() => onPositionChange(activeItem.id, ORIGIN)}
+            className="shrink-0 text-xs font-medium text-gray-500 dark:text-gray-400"
+          >
+            Zentrieren
+          </button>
           <button
             onClick={() => setActiveId(null)}
             className="shrink-0 text-xs font-medium text-rose-600 dark:text-rose-400"
@@ -173,9 +253,10 @@ function FigureZone({
   style,
   item,
   scale,
+  position,
   active,
   emoji,
-  onSelect,
+  onPointerDownItem,
   onRemove,
   zIndex,
   optional,
@@ -183,9 +264,10 @@ function FigureZone({
   style: CSSProperties;
   item: ClothingItem | undefined;
   scale: number;
+  position: Position;
   active: boolean;
   emoji: string;
-  onSelect: (item: ClothingItem) => void;
+  onPointerDownItem: (item: ClothingItem, e: ReactPointerEvent<HTMLButtonElement>) => void;
   onRemove: (item: ClothingItem) => void;
   zIndex: number;
   optional?: boolean;
@@ -205,8 +287,8 @@ function FigureZone({
   return (
     <div className="absolute" style={{ ...style, zIndex }}>
       <button
-        onClick={() => onSelect(item)}
-        className={`flex h-full w-full items-center justify-center rounded-xl transition ${
+        onPointerDown={(e) => onPointerDownItem(item, e)}
+        className={`flex h-full w-full touch-none items-center justify-center rounded-xl transition ${
           active ? "outline outline-2 outline-offset-2 outline-rose-400" : ""
         }`}
         title={item.name}
@@ -215,14 +297,11 @@ function FigureZone({
           image={item.image}
           alt={item.name}
           className="h-full w-full object-contain drop-shadow-md"
-          style={{ transform: `scale(${scale})` }}
+          style={{ transform: `translate(${position.x}%, ${position.y}%) scale(${scale})` }}
         />
       </button>
       <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onRemove(item);
-        }}
+        onClick={() => onRemove(item)}
         className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gray-700 text-[10px] text-white shadow"
       >
         ✕
