@@ -56,11 +56,6 @@ function traceStickFigure(ctx: CanvasRenderingContext2D, s: number) {
   ctx.moveTo(80 * s, 128 * s);
   ctx.quadraticCurveTo(80 * s, 170 * s, 88 * s, 196 * s);
   ctx.stroke();
-
-  ctx.beginPath();
-  ctx.moveTo(34 * s, 92 * s);
-  ctx.quadraticCurveTo(60 * s, 108 * s, 86 * s, 92 * s);
-  ctx.stroke();
 }
 
 /** Mirrors the stick figure drawn behind the garments in OutfitFigure.tsx, so
