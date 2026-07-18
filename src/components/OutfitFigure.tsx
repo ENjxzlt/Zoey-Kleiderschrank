@@ -2,6 +2,7 @@ import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import { useRef, useState } from "react";
 import ImageThumb from "./ImageThumb";
 import type { Category, ClothingItem } from "../types";
+import { ACCESSORY_SIZE, ZONES, defaultAccessoryPosition, zoneStyle } from "../figureLayout";
 
 const MIN_SCALE = 0.6;
 const MAX_SCALE = 1.8;
@@ -19,10 +20,6 @@ const ACCESSORY_BOUNDS: Bounds = { min: ACCESSORY_MIN, max: ACCESSORY_MAX };
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
-}
-
-function defaultAccessoryPosition(index: number): Position {
-  return { x: 80, y: 10 + index * 16 };
 }
 
 interface OutfitFigureProps {
@@ -164,7 +161,7 @@ export default function OutfitFigure({
 
         {showKleid ? (
           <FigureZone
-            style={{ top: "17%", left: "18%", width: "64%", height: "58%" }}
+            style={zoneStyle(ZONES.kleid)}
             item={kleid}
             scale={kleid ? (scales[kleid.id] ?? 1) : 1}
             position={positionOf(kleid, ORIGIN)}
@@ -177,7 +174,7 @@ export default function OutfitFigure({
         ) : (
           <>
             <FigureZone
-              style={{ top: "21%", left: "23%", width: "54%", height: "32%" }}
+              style={zoneStyle(ZONES.oberteil)}
               item={oberteil ?? kleid}
               scale={oberteil ? (scales[oberteil.id] ?? 1) : 1}
               position={positionOf(oberteil, ORIGIN)}
@@ -188,7 +185,7 @@ export default function OutfitFigure({
               zIndex={20}
             />
             <FigureZone
-              style={{ top: "50%", left: "25%", width: "50%", height: "38%" }}
+              style={zoneStyle(ZONES.bottom)}
               item={bottom}
               scale={bottom ? (scales[bottom.id] ?? 1) : 1}
               position={positionOf(bottom, ORIGIN)}
@@ -202,7 +199,7 @@ export default function OutfitFigure({
         )}
 
         <FigureZone
-          style={{ top: "17%", left: "12%", width: "76%", height: "44%" }}
+          style={zoneStyle(ZONES.jacke)}
           item={jacke}
           scale={jacke ? (scales[jacke.id] ?? 1) : 1}
           position={positionOf(jacke, ORIGIN)}
@@ -215,7 +212,7 @@ export default function OutfitFigure({
         />
 
         <FigureZone
-          style={{ top: "88%", left: "27%", width: "46%", height: "11%" }}
+          style={zoneStyle(ZONES.schuhe)}
           item={schuhe}
           scale={schuhe ? (scales[schuhe.id] ?? 1) : 1}
           position={positionOf(schuhe, ORIGIN)}
@@ -227,7 +224,7 @@ export default function OutfitFigure({
         />
 
         <FigureZone
-          style={{ top: "-3%", left: "30%", width: "40%", height: "22%" }}
+          style={zoneStyle(ZONES.kopfbedeckung)}
           item={kopfbedeckung}
           scale={kopfbedeckung ? (scales[kopfbedeckung.id] ?? 1) : 1}
           position={positionOf(kopfbedeckung, ORIGIN)}
@@ -369,8 +366,8 @@ function AccessoryBadge({
       style={{
         left: `${position.x}%`,
         top: `${position.y}%`,
-        width: "24%",
-        height: "14%",
+        width: `${ACCESSORY_SIZE.width}%`,
+        height: `${ACCESSORY_SIZE.height}%`,
         transform: "translate(-50%, -50%)",
         zIndex,
       }}

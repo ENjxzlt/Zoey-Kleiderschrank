@@ -5,6 +5,7 @@ import PageHeader from "../components/PageHeader";
 import CategoryPicker from "../components/CategoryPicker";
 import ItemCard from "../components/ItemCard";
 import OutfitFigure from "../components/OutfitFigure";
+import { renderOutfitToBlob } from "../services/outfitImage";
 import type { Category, ClothingItem } from "../types";
 
 export default function OutfitBuilderPage() {
@@ -25,6 +26,7 @@ export default function OutfitBuilderPage() {
   const [filter, setFilter] = useState<Category | "alle">("alle");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     if (existing && !initialized) {
@@ -100,6 +102,25 @@ export default function OutfitBuilderPage() {
     navigate("/outfits");
   }
 
+  async function handleDownloadImage() {
+    if (selectedItems.length === 0) return;
+    setDownloading(true);
+    try {
+      const blob = await renderOutfitToBlob(selectedItems, scales, positions, name);
+      const fileName = (name.trim() || "outfit").replace(/[^a-z0-9äöüß_-]+/gi, "_");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${fileName}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(false);
+    }
+  }
+
   return (
     <div>
       <PageHeader title={isEditing ? "Outfit bearbeiten" : "Neues Outfit"} />
@@ -126,9 +147,19 @@ export default function OutfitBuilderPage() {
               Wähle unten Teile aus – sie erscheinen an der Figur.
             </p>
           ) : (
-            <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
-              Ziehe ein Teil, um es zu verschieben. Antippen passt die Größe an, das ✕ entfernt es.
-            </p>
+            <>
+              <p className="mt-2 text-center text-xs text-gray-400 dark:text-gray-500">
+                Ziehe ein Teil, um es zu verschieben. Antippen passt die Größe an, das ✕ entfernt
+                es.
+              </p>
+              <button
+                onClick={handleDownloadImage}
+                disabled={downloading}
+                className="mx-auto mt-3 block rounded-full border border-rose-200 px-4 py-2 text-xs font-medium text-rose-600 disabled:opacity-40 dark:border-rose-900 dark:text-rose-400"
+              >
+                {downloading ? "Erstelle Bild…" : "📷 Als Bild speichern"}
+              </button>
+            </>
           )}
         </div>
       </div>
