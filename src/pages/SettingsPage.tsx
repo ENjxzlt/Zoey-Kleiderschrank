@@ -134,11 +134,75 @@ export default function SettingsPage() {
         </h2>
         <p className="mb-3 text-xs text-gray-400 dark:text-gray-500">
           Zum Hinzufügen eines Teils per Produktname (statt Foto) wird ein kostenloser Google
-          Custom-Search-API-Key sowie eine Search-Engine-ID benötigt. Beides einmalig unter{" "}
-          <span className="font-medium">console.cloud.google.com</span> bzw.{" "}
-          <span className="font-medium">programmablesearchengine.google.com</span> erstellen.
-          Kostenloses Kontingent: 100 Suchen/Tag.
+          API-Key sowie eine Search-Engine-ID benötigt. Kostenloses Kontingent: 100 Suchen/Tag.
         </p>
+
+        <details className="mb-4 rounded-xl bg-rose-50/60 p-3 dark:bg-neutral-800/60">
+          <summary className="cursor-pointer text-xs font-semibold text-rose-600 dark:text-rose-400">
+            Anleitung: API-Key &amp; Search Engine ID erstellen
+          </summary>
+          <div className="mt-3 space-y-3 text-xs text-gray-500 dark:text-gray-400">
+            <div>
+              <p className="mb-1 font-medium text-gray-600 dark:text-gray-300">
+                Teil 1 – API-Key (Google Cloud Console)
+              </p>
+              <ol className="list-decimal space-y-1 pl-4">
+                <li>
+                  <a
+                    href="https://console.cloud.google.com/apis/library/customsearch.googleapis.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-rose-600 underline dark:text-rose-400"
+                  >
+                    Custom Search API
+                  </a>{" "}
+                  öffnen (ggf. mit Google-Konto einloggen)
+                </li>
+                <li>Oben ein Projekt auswählen oder ein neues anlegen ("Projekt erstellen")</li>
+                <li>Auf der Seite „Custom Search API" den Button „Aktivieren" klicken</li>
+                <li>
+                  Im linken Menü zu „Anmeldedaten" (Credentials) wechseln → oben „+ Anmeldedaten
+                  erstellen" → „API-Schlüssel" auswählen
+                </li>
+                <li>Den angezeigten Key kopieren</li>
+              </ol>
+            </div>
+            <div>
+              <p className="mb-1 font-medium text-gray-600 dark:text-gray-300">
+                Teil 2 – Search Engine ID (Programmable Search Engine)
+              </p>
+              <ol className="list-decimal space-y-1 pl-4">
+                <li>
+                  <a
+                    href="https://programmablesearchengine.google.com/controlpanel/create"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-rose-600 underline dark:text-rose-400"
+                  >
+                    Neue Suchmaschine anlegen
+                  </a>
+                </li>
+                <li>
+                  Feld „Sites to search" leer lassen und den Schalter{" "}
+                  <span className="font-medium">„Search the entire web"</span> aktivieren
+                </li>
+                <li>Einen Namen vergeben und auf „Create" klicken</li>
+                <li>
+                  In der Suchmaschinen-Übersicht auf „Customize" bzw. „Control Panel" gehen, dort
+                  unter <span className="font-medium">„Basics"</span> die{" "}
+                  <span className="font-medium">„Search engine ID"</span> kopieren – das ist der
+                  cx-Wert
+                </li>
+                <li>
+                  Im selben Bereich unter „Search features" den Schalter{" "}
+                  <span className="font-medium">„Image search"</span> auf „On" stellen
+                </li>
+              </ol>
+            </div>
+            <p>Beide Werte unten eintragen und speichern.</p>
+          </div>
+        </details>
+
         <input
           value={googleKey}
           onChange={(e) => setGoogleKey(e.target.value)}
