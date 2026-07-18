@@ -183,19 +183,24 @@ export default function SettingsPage() {
                   </a>
                 </li>
                 <li>
-                  Feld „Sites to search" leer lassen und den Schalter{" "}
-                  <span className="font-medium">„Search the entire web"</span> aktivieren
-                </li>
-                <li>Einen Namen vergeben und auf „Create" klicken</li>
-                <li>
-                  In der Suchmaschinen-Übersicht auf „Customize" bzw. „Control Panel" gehen, dort
-                  unter <span className="font-medium">„Basics"</span> die{" "}
-                  <span className="font-medium">„Search engine ID"</span> kopieren – das ist der
-                  cx-Wert
+                  Bei „Websites oder Seiten auswählen" ist eine Eingabe Pflicht – irgendeine
+                  Website eintragen (z. B. <span className="font-medium">google.com</span>) und
+                  „Hinzufügen" klicken. Das wird gleich wieder aufgehoben.
                 </li>
                 <li>
-                  Im selben Bereich unter „Search features" den Schalter{" "}
-                  <span className="font-medium">„Image search"</span> auf „On" stellen
+                  Unter „Sucheinstellungen" direkt hier den Schalter{" "}
+                  <span className="font-medium">„Bildersuche"</span> aktivieren
+                </li>
+                <li>Namen vergeben, reCAPTCHA bestätigen, auf „Erstellen" klicken</li>
+                <li>
+                  In der Suchmaschinen-Übersicht auf „Anpassen" bzw. „Control Panel" gehen, dort
+                  unter <span className="font-medium">„Grundlagen"</span> den Schalter{" "}
+                  <span className="font-medium">„Suche im gesamten Web"</span> aktivieren – das
+                  hebt die Website-Beschränkung aus Schritt 2 wieder auf
+                </li>
+                <li>
+                  Im selben Bereich die <span className="font-medium">„Suchmaschinen-ID"</span>{" "}
+                  kopieren – das ist der cx-Wert
                 </li>
               </ol>
             </div>

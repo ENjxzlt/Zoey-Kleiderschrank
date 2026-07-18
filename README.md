@@ -59,11 +59,14 @@ normal per Foto. Auch in der App selbst unter **Einstellungen → Produktbild-Su
 **Teil 2 — Search Engine ID (Programmable Search Engine)**
 
 1. [Neue Suchmaschine anlegen](https://programmablesearchengine.google.com/controlpanel/create)
-2. Feld „Sites to search" leer lassen und den Schalter **„Search the entire web"** aktivieren
-3. Einen Namen vergeben und auf „Create" klicken
-4. In der Suchmaschinen-Übersicht auf „Customize" bzw. „Control Panel" gehen, dort unter
-   **„Basics"** die **„Search engine ID"** kopieren — das ist der `cx`-Wert
-5. Im selben Bereich unter „Search features" den Schalter **„Image search"** auf „On" stellen
+2. Bei „Websites oder Seiten auswählen" ist eine Eingabe Pflicht — irgendeine Website eintragen
+   (z. B. `google.com`) und „Hinzufügen" klicken. Das wird gleich wieder aufgehoben.
+3. Unter „Sucheinstellungen" direkt hier den Schalter **„Bildersuche"** aktivieren
+4. Namen vergeben, reCAPTCHA bestätigen, auf „Erstellen" klicken
+5. In der Suchmaschinen-Übersicht auf „Anpassen" bzw. „Control Panel" gehen, dort unter
+   **„Grundlagen"** den Schalter **„Suche im gesamten Web"** aktivieren — das hebt die
+   Website-Beschränkung aus Schritt 2 wieder auf
+6. Im selben Bereich die **„Suchmaschinen-ID"** kopieren — das ist der `cx`-Wert
 
 Beide Werte in der App unter **Einstellungen → Produktbild-Suche** einfügen und speichern.
 
