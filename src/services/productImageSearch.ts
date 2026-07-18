@@ -53,6 +53,21 @@ export async function searchProductImages(
     } catch {
       // ignore non-JSON error body
     }
+
+    if (response.status === 403) {
+      throw new ProductSearchError(
+        `Zugriff verweigert (403). ${detail} Prüfe, ob die Custom Search API im selben ` +
+          "Google-Cloud-Projekt aktiviert ist, in dem der API-Key erstellt wurde (oben im " +
+          "Projekt-Dropdown der Cloud Console nachsehen), und ob der Key keine API-" +
+          "Einschränkung hat, die Custom Search ausschließt.",
+      );
+    }
+    if (response.status === 400) {
+      throw new ProductSearchError(
+        `Ungültige Anfrage (400). ${detail} Bitte API-Key und Search Engine ID in den ` +
+          "Einstellungen prüfen.",
+      );
+    }
     throw new ProductSearchError(`Bildsuche fehlgeschlagen (${response.status}). ${detail}`.trim());
   }
 

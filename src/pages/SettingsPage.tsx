@@ -166,6 +166,11 @@ export default function SettingsPage() {
                 </li>
                 <li>Den angezeigten Key kopieren</li>
               </ol>
+              <p className="mt-2 rounded-lg bg-amber-50 p-2 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                ⚠️ Häufigste Fehlerquelle: Oben im Projekt-Dropdown muss beim Aktivieren der API
+                und beim Erstellen des Keys dasselbe Projekt ausgewählt sein. Bei „Zugriff
+                verweigert (403)" dort nachsehen und ggf. 1–2 Minuten warten.
+              </p>
             </div>
             <div>
               <p className="mb-1 font-medium text-gray-600 dark:text-gray-300">

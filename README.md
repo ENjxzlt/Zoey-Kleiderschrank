@@ -56,6 +56,10 @@ normal per Foto. Auch in der App selbst unter **Einstellungen → Produktbild-Su
    „API-Schlüssel" auswählen
 5. Den angezeigten Key kopieren
 
+> ⚠️ **Häufigste Fehlerquelle** ("Zugriff verweigert (403)"): Oben im Projekt-Dropdown muss beim
+> Aktivieren der API und beim Erstellen des Keys dasselbe Projekt ausgewählt sein. Danach ggf.
+> 1–2 Minuten warten, bis die Aktivierung greift.
+
 **Teil 2 — Search Engine ID (Programmable Search Engine)**
 
 1. [Neue Suchmaschine anlegen](https://programmablesearchengine.google.com/controlpanel/create)
