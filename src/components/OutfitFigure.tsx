@@ -156,7 +156,6 @@ export default function OutfitFigure({
           <path d="M60 46 Q90 46 96 90 L100 130" />
           <path d="M40 128 Q40 170 32 196" />
           <path d="M80 128 Q80 170 88 196" />
-          <path d="M34 92 Q60 108 86 92" />
         </svg>
 
         {showKleid ? (
