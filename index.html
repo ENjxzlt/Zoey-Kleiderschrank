@@ -35,6 +35,9 @@
             (theme === "system" &&
               window.matchMedia("(prefers-color-scheme: dark)").matches);
           document.documentElement.classList.toggle("dark", isDark);
+
+          var accent = localStorage.getItem("zoey-kleiderschrank:accent");
+          document.documentElement.classList.toggle("theme-pink", accent === "pink");
         } catch (e) {}
       })();
     </script>
