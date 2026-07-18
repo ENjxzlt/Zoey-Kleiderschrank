@@ -23,6 +23,56 @@ function firstOf(items: ClothingItem[], category: ClothingItem["category"]): Clo
   return items.find((i) => i.category === category);
 }
 
+/** Mirrors the <svg viewBox="0 0 120 200"> stick figure drawn behind the
+ * garments in OutfitFigure.tsx, so the download looks like the on-screen figure. */
+function drawStickFigure(ctx: CanvasRenderingContext2D, width: number) {
+  const s = width / 120; // viewBox is 120x200, same aspect ratio as the figure box
+
+  ctx.save();
+  ctx.strokeStyle = "#fecdd3";
+  ctx.lineWidth = 2.5 * s;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  ctx.beginPath();
+  ctx.arc(60 * s, 22 * s, 16 * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(60 * s, 38 * s);
+  ctx.lineTo(60 * s, 130 * s);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(60 * s, 46 * s);
+  ctx.quadraticCurveTo(30 * s, 46 * s, 24 * s, 90 * s);
+  ctx.lineTo(20 * s, 130 * s);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(60 * s, 46 * s);
+  ctx.quadraticCurveTo(90 * s, 46 * s, 96 * s, 90 * s);
+  ctx.lineTo(100 * s, 130 * s);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(40 * s, 128 * s);
+  ctx.quadraticCurveTo(40 * s, 170 * s, 32 * s, 196 * s);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(80 * s, 128 * s);
+  ctx.quadraticCurveTo(80 * s, 170 * s, 88 * s, 196 * s);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(34 * s, 92 * s);
+  ctx.quadraticCurveTo(60 * s, 108 * s, 86 * s, 92 * s);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
 /** Draws a garment the same way the CSS does: object-contain within the zone,
  * scaled and translated around the zone's own center. */
 function drawZoneItem(
@@ -76,7 +126,9 @@ export async function renderOutfitToBlob(
   outfitName: string,
 ): Promise<Blob> {
   const width = CANVAS_WIDTH;
-  const height = Math.round(width / FIGURE_ASPECT);
+  const figureHeight = Math.round(width / FIGURE_ASPECT);
+  const titleHeight = outfitName.trim() ? 70 : 0;
+  const height = figureHeight + titleHeight;
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
@@ -93,7 +145,8 @@ export async function renderOutfitToBlob(
     ctx.fillStyle = "#9d174d";
     ctx.font = "600 32px system-ui, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(outfitName.trim(), width / 2, 56);
+    ctx.textBaseline = "middle";
+    ctx.fillText(outfitName.trim(), width / 2, titleHeight / 2);
   }
 
   const kleid = firstOf(items, "kleid");
@@ -105,29 +158,39 @@ export async function renderOutfitToBlob(
   const accessoires = items.filter((i) => i.category === "accessoire");
   const showKleid = Boolean(kleid) && !oberteil && !bottom;
 
+  // Draw order mirrors the on-screen z-index stacking in OutfitFigure.tsx
+  // (bottom < schuhe < oberteil/kleid < jacke < kopfbedeckung < accessoires).
   const drawOrder: { item: ClothingItem | undefined; zone: ZoneRect }[] = showKleid
-    ? [{ item: kleid, zone: ZONES.kleid }]
+    ? [
+        { item: schuhe, zone: ZONES.schuhe },
+        { item: kleid, zone: ZONES.kleid },
+      ]
     : [
-        { item: oberteil ?? kleid, zone: ZONES.oberteil },
         { item: bottom, zone: ZONES.bottom },
+        { item: schuhe, zone: ZONES.schuhe },
+        { item: oberteil ?? kleid, zone: ZONES.oberteil },
       ];
   drawOrder.push(
-    { item: schuhe, zone: ZONES.schuhe },
     { item: jacke, zone: ZONES.jacke },
     { item: kopfbedeckung, zone: ZONES.kopfbedeckung },
   );
 
+  ctx.save();
+  ctx.translate(0, titleHeight);
+  drawStickFigure(ctx, width);
+
   for (const { item, zone } of drawOrder) {
     if (!item) continue;
     const img = await loadImage(item.image);
-    drawZoneItem(ctx, img, zone, scales[item.id] ?? 1, positions[item.id] ?? { x: 0, y: 0 }, width, height);
+    drawZoneItem(ctx, img, zone, scales[item.id] ?? 1, positions[item.id] ?? { x: 0, y: 0 }, width, figureHeight);
   }
 
   for (const [index, item] of accessoires.entries()) {
     const img = await loadImage(item.image);
     const position = positions[item.id] ?? defaultAccessoryPosition(index);
-    drawAccessory(ctx, img, position, scales[item.id] ?? 1, width, height);
+    drawAccessory(ctx, img, position, scales[item.id] ?? 1, width, figureHeight);
   }
+  ctx.restore();
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
