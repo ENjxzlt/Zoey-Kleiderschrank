@@ -6,7 +6,8 @@ import { getApiKey, setApiKey } from "../services/apiKey";
 import { getGoogleSearchConfig, setGoogleSearchConfig } from "../services/googleSearchConfig";
 import { exportBackup, importBackup } from "../services/backup";
 import { useTheme } from "../hooks/useTheme";
-import type { ThemeChoice } from "../services/theme";
+import { useThemeAccent } from "../hooks/useThemeAccent";
+import type { ThemeAccent, ThemeChoice } from "../services/theme";
 
 export default function SettingsPage() {
   const { reload } = useWardrobe();
@@ -20,6 +21,7 @@ export default function SettingsPage() {
   const [confirmReset, setConfirmReset] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
   const [theme, setTheme] = useTheme();
+  const [accent, setAccent] = useThemeAccent();
 
   function handleSaveKey() {
     setApiKey(key.trim());
@@ -94,6 +96,28 @@ export default function SettingsPage() {
               onClick={() => setTheme(option.value)}
               className={`rounded-full py-2 text-xs font-medium ${
                 theme === option.value
+                  ? "bg-rose-600 text-white"
+                  : "border border-gray-200 text-gray-500 dark:border-neutral-700 dark:text-gray-400"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        <p className="mb-2 mt-4 text-xs font-medium text-gray-500 dark:text-gray-400">Motiv</p>
+        <div className="grid grid-cols-2 gap-2">
+          {(
+            [
+              { value: "standard", label: "Standard" },
+              { value: "pink", label: "Pink" },
+            ] as { value: ThemeAccent; label: string }[]
+          ).map((option) => (
+            <button
+              key={option.value}
+              onClick={() => setAccent(option.value)}
+              className={`rounded-full py-2 text-xs font-medium ${
+                accent === option.value
                   ? "bg-rose-600 text-white"
                   : "border border-gray-200 text-gray-500 dark:border-neutral-700 dark:text-gray-400"
               }`}
